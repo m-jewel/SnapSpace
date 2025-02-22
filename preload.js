@@ -5,5 +5,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
   launchPreset: (presetName) => ipcRenderer.invoke('launch-preset', presetName),
   createPreset: (newPreset) => ipcRenderer.invoke('create-preset', newPreset),
   updatePreset: (data) => ipcRenderer.invoke('update-preset', data),
-  removePreset: (presetName) => ipcRenderer.invoke('remove-preset', presetName)
+  removePreset: (presetName) => ipcRenderer.invoke('remove-preset', presetName),
+  browseForExe: () => ipcRenderer.invoke('browse-for-exe')
 });

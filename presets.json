@@ -9,6 +9,21 @@
           "target": "https://canvas.usask.ca/"
         }
       ]
+    },
+    {
+      "name": "essay writing",
+      "description": "",
+      "icon": "",
+      "items": [
+        {
+          "type": "app",
+          "target": "C:\\Program Files (x86)\\Microsoft Office\\root\\Office16\\WINWORD.EXE"
+        },
+        {
+          "type": "url",
+          "target": "https://docs.google.com"
+        }
+      ]
     }
   ]
 }

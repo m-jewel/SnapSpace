@@ -118,6 +118,21 @@ ipcMain.handle('focus-window', () => {
   }
 });
 
+ipcMain.handle('browse-for-exe', async () => {
+  // Show a file dialog for picking an executable (on Windows, .exe)
+  const result = await dialog.showOpenDialog({
+    title: 'Select Executable',
+    properties: ['openFile'],
+    filters: [
+      { name: 'Executables', extensions: ['exe', 'app'] } 
+      // adjust for Mac (.app), Linux, or more
+    ]
+  });
+  if (result.canceled || result.filePaths.length === 0) {
+    return null;
+  }
+  return result.filePaths[0];
+});
 
 // ---------- APP LAUNCH LOGIC ----------
 

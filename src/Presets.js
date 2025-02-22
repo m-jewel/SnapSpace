@@ -1,10 +1,13 @@
 import React from 'react';
 
-const presetIcons = {
-  'Study Mode': '📚',
-  'Gaming Mode': '🎮',
-  'Work Mode': '💼'
-};
+function isUrl(str) {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 function Presets({ 
   presets, 
@@ -16,32 +19,57 @@ function Presets({
 }) {
   return (
     <div style={styles.container}>
+      <h2 style={styles.header}>Your Presets</h2>
+      {presets.length === 0 && (
+        <p style={styles.noPresets}>No presets found. Create one below.</p>
+      )}
       <div style={styles.cardRow}>
         {presets.map((preset) => (
           <div key={preset.name} style={styles.presetCard}>
             <div style={styles.icon}>
-              {presetIcons[preset.name] || '⚙️'}
+              {renderIcon(preset.icon)}
             </div>
             <div style={styles.name}>{preset.name}</div>
-            <div style={styles.desc}>{preset.description}</div>
+            {preset.description && (
+              <div style={styles.desc}>{preset.description}</div>
+            )}
             <div style={styles.actions}>
-              <button onClick={() => onLaunch(preset.name)}>Launch</button>
-              <button onClick={() => onEdit(preset)}>Edit</button>
-              <button onClick={() => onRemove(preset.name)}>Remove</button>
+              <button style={styles.actionBtn} onClick={() => onLaunch(preset.name)}>
+                Launch
+              </button>
+              <button style={styles.actionBtn} onClick={() => onEdit(preset)}>
+                Edit
+              </button>
+              <button style={styles.actionBtn} onClick={() => onRemove(preset.name)}>
+                Remove
+              </button>
             </div>
           </div>
         ))}
       </div>
-      <div style={{ marginTop: '30px' }}>
-        <button style={styles.button} onClick={onBackHome}>
+      <div style={styles.footer}>
+        <button style={styles.navBtn} onClick={onBackHome}>
           Back to Home
         </button>
-        <button style={styles.button} onClick={onCreateNew}>
+        <button style={styles.navBtn} onClick={onCreateNew}>
           Create New Preset
         </button>
       </div>
     </div>
   );
+}
+
+// Helper function to render the icon
+function renderIcon(icon) {
+  if (!icon) {
+    return '⚙️'; // fallback icon
+  }
+  // If it's a URL, show an image
+  if (isUrl(icon)) {
+    return <img src={icon} alt="icon" style={styles.iconImage} />;
+  }
+  // Otherwise, treat it as text (could be an emoji)
+  return icon;
 }
 
 const styles = {
@@ -50,6 +78,15 @@ const styles = {
     flexDirection: 'column',
     alignItems: 'center',
     padding: '20px'
+  },
+  header: {
+    fontSize: '1.5rem',
+    marginBottom: '10px'
+  },
+  noPresets: {
+    marginTop: '10px',
+    fontSize: '1rem',
+    color: '#555'
   },
   cardRow: {
     display: 'flex',
@@ -69,24 +106,51 @@ const styles = {
   },
   icon: {
     fontSize: '40px',
-    marginBottom: '10px'
+    marginBottom: '10px',
+    minHeight: '40px'
+  },
+  iconImage: {
+    width: '40px',
+    height: '40px',
+    objectFit: 'cover'
   },
   name: {
     fontWeight: 'bold',
-    marginBottom: '5px'
+    marginBottom: '5px',
+    fontSize: '1.1rem'
   },
   desc: {
-    fontSize: '14px',
-    color: '#666'
+    fontSize: '0.9rem',
+    color: '#666',
+    marginBottom: '10px'
   },
   actions: {
+    display: 'flex',
+    justifyContent: 'center',
+    gap: '6px',
     marginTop: '10px'
   },
-  button: {
+  actionBtn: {
+    backgroundColor: '#2ecc71',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '4px',
+    padding: '6px 10px',
+    cursor: 'pointer',
+    fontSize: '0.9rem'
+  },
+  footer: {
+    marginTop: '30px'
+  },
+  navBtn: {
     padding: '10px 20px',
     margin: '0 10px',
     cursor: 'pointer',
-    fontSize: '1rem'
+    fontSize: '1rem',
+    backgroundColor: '#3498db',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '4px'
   }
 };
 
