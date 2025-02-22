@@ -231,32 +231,30 @@ const styles = {
   },
   recentCard: {
     margin: '0 auto',
-    maxWidth: '200px'
+    maxWidth: '12em'
   },
   // SCROLLER
   scrollerSection: {
     marginTop: '20px'
   },
-  /** Key: fix the width so there's guaranteed overflow if there are enough cards */
   scrollerWrapper: {
     position: 'relative',
     margin: '0 auto',
-    width: '600px', // edit for overflow
+    width: '600px',
     overflow: 'hidden'
   },
   scroller: {
     display: 'flex',
     flexWrap: 'nowrap',
-    gap: '16px',
+    gap: '1em',
     overflowX: 'auto',
     overflowY: 'hidden',
-    // Hide scrollbar in webkit
     WebkitOverflowScrolling: 'touch',
-    scrollbarWidth: 'none', // Firefox
-    msOverflowStyle: 'none' // IE/Edge
+    scrollbarWidth: 'none',
+    msOverflowStyle: 'none'
   },
   scrollerCard: {
-    width: '120px' // smaller box
+    width: '8em'
   },
   arrowBtn: {
     position: 'absolute',
@@ -266,55 +264,62 @@ const styles = {
     color: '#fff',
     border: 'none',
     borderRadius: '50%',
-    width: '32px',
-    height: '32px',
+    width: '2em',
+    height: '2em',
     cursor: 'pointer',
     fontSize: '1.2rem',
     zIndex: 10
   },
   // PRESET CARD (shared)
   presetCard: {
+    fontSize: '1em',
     position: 'relative',
     backgroundColor: '#fff',
     border: '1px solid #ccc',
-    borderRadius: '8px',
+    borderRadius: '0.5em',
     textAlign: 'center',
-    padding: '10px',
-    cursor: 'default'
+    padding: '1em',
+    cursor: 'default',
+    width: '8em'
   },
   icon: {
-    fontSize: '32px',
-    marginBottom: '8px',
-    minHeight: '32px'
+    fontSize: '1.6em',
+    marginBottom: '0.5em',
+    minHeight: '1.6em'
   },
   iconImage: {
-    width: '32px',
-    height: '32px',
+    width: '1.6em',
+    height: '1.6em',
     objectFit: 'cover'
   },
-  name: {
-    fontWeight: 'bold',
-    marginBottom: '4px',
-    fontSize: '1rem'
-  },
-  desc: {
-    fontSize: '0.8rem',
-    color: '#666',
-    marginBottom: '6px'
-  },
-  actionIcons: {
-    position: 'absolute',
-    bottom: '6px',
-    right: '6px',
-    display: 'flex',
-    gap: '6px',
-    opacity: 0,
-    transition: 'opacity 0.2s ease'
-  },
-  actionIcon: {
-    fontSize: '1.1rem',
-    cursor: 'pointer'
-  }
+// Title
+name: {
+  fontWeight: 'bold',
+  marginBottom: '0.3em',
+  fontSize: '1.0em'
+},
+desc: {
+  fontSize: '0.8em',
+  color: '#666',
+  marginBottom: '0.5em'
+},
+// The container for action icons
+actionIcons: {
+  position: 'absolute',
+  bottom: '0.5em',
+  right: '0.5em',
+  display: 'flex',
+  gap: '0.3em',
+  opacity: 0,
+  transition: 'opacity 0.2s ease'
+},
+// Individual action icons (🚀, ✏️, 🗑️)
+actionIcon: {
+  /** Make them smaller so they fit inside the card nicely */
+  fontSize: '0.9em',
+  lineHeight: '1',
+  cursor: 'pointer'
+}
 };
 
 export default Presets;

@@ -98,6 +98,7 @@ ipcMain.handle('update-preset', async (event, updatedPreset) => {
   presets[idx].name = updatedPreset.newName;
   presets[idx].description = updatedPreset.description || '';
   presets[idx].items = updatedPreset.items || [];
+  presets[idx].icon = updatedPreset.icon;
   updatePresetsFile();
   return { success: true };
 });

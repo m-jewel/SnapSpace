@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 
 function EditPreset({ preset, onSave, onCancel }) {
-  // We'll store the original name, and track any changes in newName
   const [oldName] = useState(preset?.name || '');
   const [newName, setNewName] = useState(preset?.name || '');
   const [description, setDescription] = useState(preset?.description || '');
-  const [icon, setIcon] = useState(preset?.icon || ''); // <-- NEW: icon field
+  const [icon, setIcon] = useState(preset?.icon || '');
   const [items, setItems] = useState(preset?.items || []);
 
   useEffect(() => {
@@ -90,7 +89,7 @@ function EditPreset({ preset, onSave, onCancel }) {
       oldName,
       newName: newName.trim(),
       description: description.trim(),
-      icon: icon.trim(),          // <-- Include updated icon
+      icon: icon.trim(),
       items
     };
 
