@@ -1,0 +1,24 @@
+{
+  "name": "snapspace",
+  "version": "1.0.0",
+  "description": "A desktop app for one-click workspace setup",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "webpack --mode development"
+  },
+  "author": "Jewel Magcawas",
+  "license": "MIT",
+  "dependencies": {
+    "electron": "^34.2.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.26.9",
+    "@babel/preset-react": "^7.26.3",
+    "babel-loader": "^9.2.1",
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
+  }
+}
