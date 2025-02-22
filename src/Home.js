@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-function Home({ onContinue, lastPreset }) {
+function Home({ onContinue, lastPreset, hasPresets, onCreateNew }) {
   const [greeting, setGreeting] = useState('');
 
   useEffect(() => {
@@ -18,18 +18,33 @@ function Home({ onContinue, lastPreset }) {
     <div style={styles.container}>
       <h1 style={styles.title}>{greeting}, I’m SnapSpace!</h1>
       <p style={styles.subtitle}>
-        I can help you instantly set up your workspace! 
+        I can help you instantly set up your workspace!
       </p>
-      {lastPreset ? (
-        <button style={styles.button} onClick={() => onContinue('resume')}>
-          Resume Last Used Preset: {lastPreset}
-        </button>
-      ) : (
-        <p>No presets found yet. Click below to create or select a preset.</p>
+
+      {!hasPresets && (
+        <>
+          <p>No presets found yet.</p>
+          <button style={styles.button} onClick={onCreateNew}>
+            Get Started
+          </button>
+        </>
       )}
-      <button style={styles.button} onClick={() => onContinue('presets')}>
-        Go to Presets
-      </button>
+
+      {hasPresets && (
+        <>
+          {lastPreset && (
+            <button style={styles.button} onClick={() => onContinue('resume')}>
+              Resume Last Used Preset: {lastPreset}
+            </button>
+          )}
+          <button style={styles.button} onClick={() => onContinue('presets')}>
+            Go to Presets
+          </button>
+          <button style={styles.button} onClick={onCreateNew}>
+            Create New Preset
+          </button>
+        </>
+      )}
     </div>
   );
 }

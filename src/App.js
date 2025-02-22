@@ -1,39 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import Home from './Home';
-
-const presetIcons = {
-  'Study Mode': '📚',
-  'Gaming Mode': '🎮',
-  'Work Mode': '💼'
-};
+import Presets from './Presets';
+import CreatePreset from './CreatePreset';
+import EditPreset from './EditPreset';
 
 function App() {
   const [presets, setPresets] = useState([]);
   const [view, setView] = useState('home'); 
-  // 'home' = show the home screen
-  // 'presets' = show the preset list
-
+  // possible views: 'home', 'presets', 'create', 'edit'
+  
   const [lastUsedPreset, setLastUsedPreset] = useState(null);
 
+  // For editing
+  const [presetToEdit, setPresetToEdit] = useState(null);
+
   useEffect(() => {
-    // Load presets from Electron
     window.electronAPI.getPresets().then(data => {
       setPresets(data);
     });
 
-    // Check localStorage for last used preset
     const storedPreset = localStorage.getItem('lastUsedPreset');
     if (storedPreset) {
       setLastUsedPreset(storedPreset);
     }
   }, []);
 
+  // Launch a preset
   const handleLaunch = (name) => {
-    // Save this as last used preset
     localStorage.setItem('lastUsedPreset', name);
     setLastUsedPreset(name);
 
-    // Ask main process to launch the preset
     window.electronAPI.launchPreset(name).then(response => {
       if (!response.success) {
         alert(`Failed to launch ${name}: ${response.message}`);
@@ -41,7 +37,7 @@ function App() {
     });
   };
 
-  // Called when user clicks "Resume Last Used Preset" or "Go to Presets"
+  // Called by Home to either resume or go to presets
   const handleContinue = (action) => {
     if (action === 'resume' && lastUsedPreset) {
       handleLaunch(lastUsedPreset);
@@ -50,79 +46,89 @@ function App() {
     }
   };
 
-  if (view === 'home') {
-    // Show the home screen
-    return <Home onContinue={handleContinue} lastPreset={lastUsedPreset} />;
+  // Refresh presets from main
+  const refreshPresets = () => {
+    window.electronAPI.getPresets().then(data => {
+      setPresets(data);
+    });
+  };
+
+  // On create preset done
+  const handleCreateDone = (options) => {
+    // e.g., { newPresetName, action: 'confirm' or 'launch' }
+    refreshPresets();
+    if (options.action === 'launch' && options.newPresetName) {
+      handleLaunch(options.newPresetName);
+    }
+    setView('home');
+  };
+
+  // On edit preset done
+  const handleEditDone = () => {
+    refreshPresets();
+    setView('home');
+  };
+
+  // On remove preset
+  const handleRemovePreset = (name) => {
+    if (window.confirm(`Are you sure you want to remove "${name}"?`)) {
+      window.electronAPI.removePreset(name).then(response => {
+        if (!response.success) {
+          alert(`Failed to remove preset: ${response.message}`);
+        } else {
+          refreshPresets();
+        }
+      });
+    }
+  };
+
+  // If editing
+  if (view === 'edit') {
+    return (
+      <EditPreset 
+        preset={presetToEdit} 
+        onSave={handleEditDone} 
+        onCancel={() => setView('home')}
+      />
+    );
   }
 
-  // Otherwise, show the Preset list screen
+  // If creating
+  if (view === 'create') {
+    return (
+      <CreatePreset
+        onDone={handleCreateDone}
+        onCancel={() => setView('home')}
+      />
+    );
+  }
+
+  // If home
+  if (view === 'home') {
+    return (
+      <Home
+        onContinue={handleContinue}
+        lastPreset={lastUsedPreset}
+        hasPresets={presets.length > 0}
+        onCreateNew={() => setView('create')}
+      />
+    );
+  }
+
+  // Otherwise, show Presets list
   return (
-    <div style={styles.presetContainer}>
-      <h1>SnapSpace</h1>
-      <div style={styles.cardRow}>
-        {presets.map((preset) => (
-          <div 
-            key={preset.name} 
-            style={styles.presetCard} 
-            onClick={() => handleLaunch(preset.name)}
-          >
-            <div style={styles.icon}>
-              {presetIcons[preset.name] || '⚙️'}
-            </div>
-            <div style={styles.name}>{preset.name}</div>
-            <div style={styles.desc}>{preset.description}</div>
-          </div>
-        ))}
-      </div>
-      <button style={styles.backButton} onClick={() => setView('home')}>
-        Back to Home
-      </button>
-    </div>
+    <Presets
+      presets={presets}
+      onBackHome={() => setView('home')}
+      onLaunch={handleLaunch}
+      onRemove={handleRemovePreset}
+      onEdit={(preset) => {
+        setPresetToEdit(preset);
+        setView('edit');
+      }}
+      onCreateNew={() => setView('create')}
+    />
   );
 }
-
-const styles = {
-  presetContainer: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px'
-  },
-  cardRow: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: '20px',
-    marginTop: '20px'
-  },
-  presetCard: {
-    backgroundColor: '#fff',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    width: '180px',
-    textAlign: 'center',
-    padding: '20px',
-    cursor: 'pointer',
-    transition: 'box-shadow 0.3s ease'
-  },
-  icon: {
-    fontSize: '40px',
-    marginBottom: '10px'
-  },
-  name: {
-    fontWeight: 'bold',
-    marginBottom: '5px'
-  },
-  desc: {
-    fontSize: '14px',
-    color: '#666'
-  },
-  backButton: {
-    marginTop: '30px',
-    padding: '10px 20px',
-    cursor: 'pointer',
-    fontSize: '1rem'
-  }
-};
 
 export default App;
