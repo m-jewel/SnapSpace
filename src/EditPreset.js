@@ -138,7 +138,6 @@ function EditPreset({ preset, onSave, onCancel }) {
         />
       </div>
 
-      {/* NEW: Icon Field */}
       <div style={styles.fieldGroup}>
         <label style={styles.label}>
           Icon <span style={styles.optional}>(optional)</span>

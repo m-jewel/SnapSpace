@@ -24,6 +24,61 @@
           "target": "https://docs.google.com"
         }
       ]
+    },
+    {
+      "name": "faf",
+      "description": "",
+      "icon": "",
+      "items": [
+        {
+          "type": "app",
+          "target": "dav"
+        }
+      ]
+    },
+    {
+      "name": "fefe",
+      "description": "",
+      "icon": "",
+      "items": [
+        {
+          "type": "app",
+          "target": "fef"
+        }
+      ]
+    },
+    {
+      "name": "fwef",
+      "description": "",
+      "icon": "",
+      "items": [
+        {
+          "type": "app",
+          "target": "ewfwef"
+        }
+      ]
+    },
+    {
+      "name": "ewfw",
+      "description": "ewfw",
+      "icon": "",
+      "items": [
+        {
+          "type": "app",
+          "target": "efw"
+        }
+      ]
+    },
+    {
+      "name": "reqgv",
+      "description": "ewfwe",
+      "icon": "🏮",
+      "items": [
+        {
+          "type": "app",
+          "target": "af"
+        }
+      ]
     }
   ]
 }

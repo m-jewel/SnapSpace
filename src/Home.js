@@ -40,7 +40,7 @@ function Home({ onContinue, lastPreset, hasPresets, onCreateNew }) {
           <button style={styles.button} onClick={() => onContinue('presets')}>
             Go to Presets
           </button>
-          <button style={styles.button} onClick={onCreateNew}>
+          <button style={styles.button} onClick={() => onCreateNew('home')}>
             Create New Preset
           </button>
         </>

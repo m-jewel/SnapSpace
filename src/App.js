@@ -11,25 +11,24 @@ function App() {
   
   const [lastUsedPreset, setLastUsedPreset] = useState(null);
 
+  // We'll store where we came from before going to 'create'
+  const [createReturnView, setCreateReturnView] = useState('home');
+
   // For editing
   const [presetToEdit, setPresetToEdit] = useState(null);
 
   useEffect(() => {
-    window.electronAPI.getPresets().then(data => {
-      setPresets(data);
-    });
-
+    window.electronAPI.getPresets().then(data => setPresets(data));
     const storedPreset = localStorage.getItem('lastUsedPreset');
     if (storedPreset) {
       setLastUsedPreset(storedPreset);
     }
   }, []);
 
-  // Launch a preset
+  // --- LAUNCH PRESET ---
   const handleLaunch = (name) => {
     localStorage.setItem('lastUsedPreset', name);
     setLastUsedPreset(name);
-
     window.electronAPI.launchPreset(name).then(response => {
       if (!response.success) {
         alert(`Failed to launch ${name}: ${response.message}`);
@@ -37,7 +36,7 @@ function App() {
     });
   };
 
-  // Called by Home to either resume or go to presets
+  // --- HOME FLOW ---
   const handleContinue = (action) => {
     if (action === 'resume' && lastUsedPreset) {
       handleLaunch(lastUsedPreset);
@@ -46,32 +45,9 @@ function App() {
     }
   };
 
-  // Refresh presets from main
-  const refreshPresets = () => {
-    window.electronAPI.getPresets().then(data => {
-      setPresets(data);
-    });
-  };
-
-  // On create preset done
-  const handleCreateDone = (options) => {
-    // e.g., { newPresetName, action: 'confirm' or 'launch' }
-    refreshPresets();
-    if (options.action === 'launch' && options.newPresetName) {
-      handleLaunch(options.newPresetName);
-    }
-    setView('home');
-  };
-
-  // On edit preset done
-  const handleEditDone = () => {
-    refreshPresets();
-    setView('home');
-  };
-
-  // On remove preset
+  // --- PRESETS FLOW ---
   const handleRemovePreset = (name) => {
-    if (window.confirm(`Are you sure you want to remove "${name}"?`)) {
+    if (window.confirm(`Remove preset "${name}"?`)) {
       window.electronAPI.removePreset(name).then(response => {
         if (!response.success) {
           alert(`Failed to remove preset: ${response.message}`);
@@ -82,51 +58,84 @@ function App() {
     }
   };
 
-  // If editing
+  // --- CREATE PRESET FLOW ---
+  // We track where the user came from (home or presets) so we know where to return after creation/cancel
+  const handleCreatePresetClick = (returnView) => {
+    setCreateReturnView(returnView); 
+    setView('create');
+  };
+
+  // Called when user finishes creating a preset
+  const handleCreateDone = (options) => {
+    refreshPresets();
+    if (options.action === 'launch' && options.newPresetName) {
+      handleLaunch(options.newPresetName);
+    }
+    // Instead of going to 'home', we go back to the stored createReturnView
+    setView(createReturnView);
+  };
+
+  // Called if user cancels creation
+  const handleCreateCancel = () => {
+    setView(createReturnView);
+  };
+
+  // --- EDIT PRESET FLOW ---
+  const handleEditDone = () => {
+    refreshPresets();
+    // After editing, let's go back to the Presets list or wherever you want
+    setView('presets');
+  };
+
+  // --- HELPER: REFRESH PRESETS ---
+  const refreshPresets = () => {
+    window.electronAPI.getPresets().then(data => setPresets(data));
+  };
+
+  // --- RENDER VIEWS ---
   if (view === 'edit') {
     return (
-      <EditPreset 
-        preset={presetToEdit} 
-        onSave={handleEditDone} 
-        onCancel={() => setView('home')}
+      <EditPreset
+        preset={presetToEdit}
+        onSave={handleEditDone}
+        onCancel={() => setView('presets')}
       />
     );
   }
 
-  // If creating
   if (view === 'create') {
     return (
       <CreatePreset
         onDone={handleCreateDone}
-        onCancel={() => setView('home')}
+        onCancel={handleCreateCancel}
       />
     );
   }
 
-  // If home
-  if (view === 'home') {
+  if (view === 'presets') {
     return (
-      <Home
-        onContinue={handleContinue}
-        lastPreset={lastUsedPreset}
-        hasPresets={presets.length > 0}
-        onCreateNew={() => setView('create')}
+      <Presets
+        presets={presets}
+        onBackHome={() => setView('home')}
+        onLaunch={handleLaunch}
+        onRemove={handleRemovePreset}
+        onEdit={(p) => {
+          setPresetToEdit(p);
+          setView('edit');
+        }}
+        onCreateNew={() => handleCreatePresetClick('presets')}
       />
     );
   }
 
-  // Otherwise, show Presets list
+  // Default: home
   return (
-    <Presets
-      presets={presets}
-      onBackHome={() => setView('home')}
-      onLaunch={handleLaunch}
-      onRemove={handleRemovePreset}
-      onEdit={(preset) => {
-        setPresetToEdit(preset);
-        setView('edit');
-      }}
-      onCreateNew={() => setView('create')}
+    <Home
+      onContinue={handleContinue}
+      lastPreset={lastUsedPreset}
+      hasPresets={presets.length > 0}
+      // If user clicks "Create New Preset" from Home, we return to home after
+      onCreateNew={() => handleCreatePresetClick('home')}
     />
   );
 }
