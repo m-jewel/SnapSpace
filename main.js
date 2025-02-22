@@ -1,7 +1,16 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { exec } = require('child_process');
+
+// Enable electron-reload (install via npm install electron-reload --save-dev)
+try {
+  require('electron-reload')(__dirname, {
+    electron: require(path.join(__dirname, 'node_modules', 'electron'))
+  });
+} catch (err) {
+  console.error('Failed to start electron-reload:', err);
+}
 
 let mainWindow;
 
@@ -17,7 +26,8 @@ function createWindow() {
   });
 
   mainWindow.loadFile('public/index.html');
-  // mainWindow.webContents.openDevTools(); Uncomment to open the DevTools.
+  // Uncomment for debugging:
+  // mainWindow.webContents.openDevTools();
 }
 
 app.whenReady().then(() => {
@@ -42,39 +52,144 @@ try {
   console.error('Error loading presets:', err);
 }
 
-// IPC handlers for communication with the renderer
+// Persist updated preset paths to file
+function updatePresetsFile() {
+  fs.writeFile(presetsPath, JSON.stringify({ presets: presets }, null, 2), (err) => {
+    if (err) {
+      console.error('Failed to update presets file:', err);
+    }
+  });
+}
+
+// IPC handler to get presets
 ipcMain.handle('get-presets', async () => {
   return presets;
 });
 
+// IPC handler to launch a preset
 ipcMain.handle('launch-preset', async (event, presetName) => {
   const preset = presets.find(p => p.name === presetName);
   if (!preset) {
     return { success: false, message: "Preset not found" };
   }
-  preset.items.forEach(item => {
+  // Process each item sequentially with a slight delay between items
+  for (const item of preset.items) {
     if (item.type === 'url') {
-      shell.openExternal(item.target);
+      if (item.browser) {
+        const command = `"${item.browser}" "${item.target}"`;
+        runCommand(command).catch(error => {
+          console.error(`Error launching ${item.target} with ${item.browser}:`, error);
+        });
+      } else {
+        shell.openExternal(item.target);
+      }
     } else if (item.type === 'app') {
-      launchApplication(item.target);
+      await launchApplication(item);
+      // Wait 500ms between launching apps to avoid timing issues with dialogs
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
-  });
+  }
   return { success: true };
 });
 
-function launchApplication(target) {
+// Use exec to launch commands and capture errors
+function runCommand(command) {
+  return new Promise((resolve, reject) => {
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+// Helper function to check if a command exists (using "where" on Windows or "which" on Unix)
+function checkCommandExists(command) {
+  return new Promise((resolve) => {
+    const checkCmd = process.platform === 'win32' ? `where ${command}` : `which ${command}`;
+    exec(checkCmd, (error, stdout, stderr) => {
+      if (error || !stdout) {
+        resolve(false);
+      } else {
+        resolve(true);
+      }
+    });
+  });
+}
+
+// Prompt the user to select an executable file for an app
+async function promptForAppPath(item) {
+  await dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Application Not Found',
+    message: `Could not launch "${item.target}". Please locate the executable file for this app.`
+  });
+  const result = await dialog.showOpenDialog(mainWindow, {
+    title: `Select executable for ${item.target}`,
+    properties: ['openFile'],
+    filters: process.platform === 'win32' ? [{ name: 'Executables', extensions: ['exe'] }] : []
+  });
+  if (!result.canceled && result.filePaths.length > 0) {
+    return result.filePaths[0];
+  }
+  return null;
+}
+
+// Launch an application; if the command doesn't exist, prompt for its executable
+async function launchApplication(item) {
+  let target = item.target;
   let command = "";
+  let isAbsolute = path.isAbsolute(target);
+
+  // For Windows, if the target isn't an absolute path, check if the command exists in PATH.
+  if (process.platform === "win32" && !isAbsolute) {
+    const exists = await checkCommandExists(target);
+    if (!exists) {
+      console.error(`Command "${target}" not found in PATH.`);
+      const newPath = await promptForAppPath(item);
+      if (newPath) {
+        item.target = newPath;
+        updatePresetsFile();
+        target = newPath;
+        isAbsolute = true;
+      } else {
+        return;
+      }
+    }
+  }
+
   if (process.platform === "win32") {
-    command = `start "" "${target}"`;
+    if (isAbsolute) {
+      command = `"${target}"`;
+    } else {
+      command = `start "" "${target}"`;
+    }
   } else if (process.platform === "darwin") {
-    command = `open -a "${target}"`;
+    if (isAbsolute) {
+      command = `"${target}"`;
+    } else {
+      command = `open -a "${target}"`;
+    }
   } else {
-    // For Linux, assuming the target is available in PATH.
     command = target;
   }
-  exec(command, (error) => {
-    if (error) {
-      console.error(`Error launching ${target}:`, error);
+
+  try {
+    await runCommand(command);
+  } catch (error) {
+    console.error(`Error launching ${target}:`, error);
+    // If launching fails, prompt the user to select the executable
+    const newPath = await promptForAppPath(item);
+    if (newPath) {
+      item.target = newPath;
+      updatePresetsFile();
+      try {
+        await runCommand(`"${newPath}"`);
+      } catch (err) {
+        console.error(`Error launching ${newPath}:`, err);
+      }
     }
-  });
+  }
 }

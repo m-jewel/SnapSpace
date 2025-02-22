@@ -1,29 +1,50 @@
 {
-    "presets": [
-      {
-        "name": "Study Mode",
-        "description": "Opens Canvas, Notion, and Anki for your study sessions",
-        "items": [
-          { "type": "url", "target": "https://canvas.usask.ca/" },
-          { "type": "app", "target": "Notion" },
-          { "type": "app", "target": "Anki" }
-        ]
-      },
-      {
-        "name": "Gaming Mode",
-        "description": "Launches game platforms and communication apps",
-        "items": [
-          { "type": "app", "target": "Steam" },
-          { "type": "url", "target": "https://discord.com" }
-        ]
-      },
-      {
-        "name": "Work Mode",
-        "description": "Opens productivity tools like email and calendar",
-        "items": [
-          { "type": "url", "target": "https://mail.google.com" },
-          { "type": "app", "target": "Outlook" }
-        ]
-      }
-    ]
-  }
+  "presets": [
+    {
+      "name": "Study Mode",
+      "description": "Opens Canvas, Notion, and Anki for your study sessions",
+      "items": [
+        {
+          "type": "url",
+          "target": "https://canvas.usask.ca/"
+        },
+        {
+          "type": "app",
+          "target": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Notion\\Notion.exe"
+        },
+        {
+          "type": "app",
+          "target": "C:\\Users\\Administrator\\AppData\\Local\\Programs\\Anki\\anki.exe"
+        }
+      ]
+    },
+    {
+      "name": "Gaming Mode",
+      "description": "Launches game platforms and communication apps",
+      "items": [
+        {
+          "type": "app",
+          "target": "Steam"
+        },
+        {
+          "type": "url",
+          "target": "https://discord.com"
+        }
+      ]
+    },
+    {
+      "name": "Work Mode",
+      "description": "Opens productivity tools like email and calendar",
+      "items": [
+        {
+          "type": "url",
+          "target": "https://mail.google.com"
+        },
+        {
+          "type": "app",
+          "target": "Outlook"
+        }
+      ]
+    }
+  ]
+}
