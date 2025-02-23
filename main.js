@@ -20,7 +20,7 @@ function createWindow() {
 
   mainWindow.setMenuBarVisibility(false);
   mainWindow.loadFile("public/index.html");
-  mainWindow.webContents.openDevTools(); // For debugging
+  // mainWindow.webContents.openDevTools(); // For debugging
 }
 
 app.whenReady().then(() => {
