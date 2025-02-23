@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 
 /** Checks if a string is a URL (for icon images) */
 function isUrl(str) {
@@ -12,16 +12,15 @@ function isUrl(str) {
 
 /** Renders a preset's icon (URL => <img>, else text/emoji => <span>) */
 function renderIcon(icon) {
-  if (!icon) return '⚙️'; // fallback icon
+  if (!icon) return "⚙️"; // fallback icon
   if (isUrl(icon)) {
     return <img src={icon} alt="icon" style={styles.iconImage} />;
   }
   return <span>{icon}</span>; // could be an emoji or text
 }
 
-
 /** Renders a preset's icon (URL => <img>, else text/emoji => <span>) */
-function PresetCard({ preset, onLaunch, onEdit, onRemove, style }) {
+function PresetCard({ presets, preset, onLaunch, onEdit, onRemove, style }) {
   const [hover, setHover] = useState(false);
 
   return (
@@ -31,16 +30,28 @@ function PresetCard({ preset, onLaunch, onEdit, onRemove, style }) {
       onMouseLeave={() => setHover(false)}
     >
       <div style={styles.icon}>{renderIcon(preset.icon)}</div>
-      <div style={styles.name} title={preset.name}>{preset.name}</div>
+      <div style={styles.name} title={preset.name}>
+        {preset.name}
+      </div>
       {preset.description && (
         <div style={styles.desc}>{preset.description}</div>
       )}
+
+      {presets.map((preset, index) => (
+        <div key={`${preset.category}-${preset.id}`}>{preset.name}</div>
+      ))}
+      {presets
+        .filter((p) => p.category && p.name)
+        .map((preset, index) => (
+          <div key={`${preset.name || "unnamed"}-${index}`}>{preset.name}</div>
+        ))}
+
       {/* Hover-based action icons */}
       <div
         style={{
           ...styles.actionIcons,
           opacity: hover ? 1 : 0,
-          pointerEvents: hover ? 'auto' : 'none'
+          pointerEvents: hover ? "auto" : "none",
         }}
       >
         <span
@@ -69,13 +80,13 @@ function PresetCard({ preset, onLaunch, onEdit, onRemove, style }) {
   );
 }
 
-function Presets({ 
-  presets, 
-  onBackHome, 
-  onLaunch, 
+function Presets({
+  presets,
+  onBackHome,
+  onLaunch,
   onRemove,
   onEdit,
-  onCreateNew
+  onCreateNew,
 }) {
   // Sort presets by lastUsedTime (descending)
   const sortedPresets = [...presets].sort((a, b) => {
@@ -95,12 +106,12 @@ function Presets({
   // Scroll horizontally by a fixed amount
   const scrollLeft = () => {
     if (scrollerRef.current) {
-      scrollerRef.current.scrollBy({ left: -200, behavior: 'smooth' });
+      scrollerRef.current.scrollBy({ left: -200, behavior: "smooth" });
     }
   };
   const scrollRight = () => {
     if (scrollerRef.current) {
-      scrollerRef.current.scrollBy({ left: 200, behavior: 'smooth' });
+      scrollerRef.current.scrollBy({ left: 200, behavior: "smooth" });
     }
   };
 
@@ -137,7 +148,7 @@ function Presets({
         <div style={styles.recentSection}>
           <h3 style={styles.sectionTitle}>Most Recent Preset</h3>
           <PresetCard
-            key={`${mostRecent.name}-${mostRecent.lastUsedTime}`}
+            presets={presets}
             preset={mostRecent}
             onLaunch={onLaunch}
             onEdit={onEdit}
@@ -158,7 +169,10 @@ function Presets({
           >
             {/* Left arrow button (shows on hover) */}
             {hoverScroller && (
-              <button style={{ ...styles.arrowBtn, left: 0 }} onClick={scrollLeft}>
+              <button
+                style={{ ...styles.arrowBtn, left: 0 }}
+                onClick={scrollLeft}
+              >
                 ◀
               </button>
             )}
@@ -166,6 +180,7 @@ function Presets({
             <div style={styles.scroller} ref={scrollerRef}>
               {otherPresets.map((p) => (
                 <PresetCard
+                  presets={presets}
                   key={`${mostRecent.name}-${mostRecent.lastUsedTime}`}
                   preset={p}
                   onLaunch={onLaunch}
@@ -178,7 +193,10 @@ function Presets({
 
             {/* Right arrow button (shows on hover) */}
             {hoverScroller && (
-              <button style={{ ...styles.arrowBtn, right: 0 }} onClick={scrollRight}>
+              <button
+                style={{ ...styles.arrowBtn, right: 0 }}
+                onClick={scrollRight}
+              >
                 ▶
               </button>
             )}
@@ -193,141 +211,141 @@ function Presets({
 
 const styles = {
   container: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    boxSizing: 'border-box',
-    overflow: 'hidden',
-    padding: '40px 20px'
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    boxSizing: "border-box",
+    overflow: "hidden",
+    padding: "40px 20px",
   },
   toolbar: {
-    position: 'absolute',
-    top: '10px',
-    left: '10px',
-    display: 'flex',
-    gap: '10px'
+    position: "absolute",
+    top: "10px",
+    left: "10px",
+    display: "flex",
+    gap: "10px",
   },
   iconBtn: {
-    background: 'none',
-    border: 'none',
-    fontSize: '1.5rem',
-    cursor: 'pointer'
+    background: "none",
+    border: "none",
+    fontSize: "1.5rem",
+    cursor: "pointer",
   },
   header: {
-    textAlign: 'center',
-    fontSize: '1.5rem',
-    marginBottom: '20px'
+    textAlign: "center",
+    fontSize: "1.5rem",
+    marginBottom: "20px",
   },
   noPresets: {
-    textAlign: 'center',
-    fontSize: '1rem',
-    color: '#555'
+    textAlign: "center",
+    fontSize: "1rem",
+    color: "#555",
   },
   // MOST RECENT
   recentSection: {
-    marginBottom: '30px'
+    marginBottom: "30px",
   },
   sectionTitle: {
-    fontSize: '1.2rem',
-    marginBottom: '10px',
-    marginLeft: '10px'
+    fontSize: "1.2rem",
+    marginBottom: "10px",
+    marginLeft: "10px",
   },
   recentCard: {
-    margin: '0 auto',
-    maxWidth: '12em'
+    margin: "0 auto",
+    maxWidth: "12em",
   },
   // SCROLLER
   scrollerSection: {
-    marginTop: '20px'
+    marginTop: "20px",
   },
   scrollerWrapper: {
-    position: 'relative',
-    margin: '0 auto',
-    width: '600px',
-    overflow: 'hidden'
+    position: "relative",
+    margin: "0 auto",
+    width: "600px",
+    overflow: "hidden",
   },
   scroller: {
-    display: 'flex',
-    flexWrap: 'nowrap',
-    gap: '1em',
-    overflowX: 'auto',
-    overflowY: 'hidden',
-    WebkitOverflowScrolling: 'touch',
-    scrollbarWidth: 'none',
-    msOverflowStyle: 'none'
+    display: "flex",
+    flexWrap: "nowrap",
+    gap: "1em",
+    overflowX: "auto",
+    overflowY: "hidden",
+    WebkitOverflowScrolling: "touch",
+    scrollbarWidth: "none",
+    msOverflowStyle: "none",
   },
   scrollerCard: {
-    width: '8em'
+    width: "8em",
   },
   arrowBtn: {
-    position: 'absolute',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    background: 'rgba(0, 0, 0, 0.5)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '50%',
-    width: '2em',
-    height: '2em',
-    cursor: 'pointer',
-    fontSize: '1.2rem',
-    zIndex: 10
+    position: "absolute",
+    top: "50%",
+    transform: "translateY(-50%)",
+    background: "rgba(0, 0, 0, 0.5)",
+    color: "#fff",
+    border: "none",
+    borderRadius: "50%",
+    width: "2em",
+    height: "2em",
+    cursor: "pointer",
+    fontSize: "1.2rem",
+    zIndex: 10,
   },
   // PRESET CARD (shared)
   presetCard: {
-    fontSize: '1em',
-    position: 'relative',
-    backgroundColor: '#fff',
-    border: '1px solid #ccc',
-    borderRadius: '0.5em',
-    textAlign: 'center',
-    padding: '1em',
-    cursor: 'default',
-    width: '8em'
+    fontSize: "1em",
+    position: "relative",
+    backgroundColor: "#fff",
+    border: "1px solid #ccc",
+    borderRadius: "0.5em",
+    textAlign: "center",
+    padding: "1em",
+    cursor: "default",
+    width: "8em",
   },
   icon: {
-    fontSize: '1.6em',
-    marginBottom: '0.5em',
-    minHeight: '1.6em'
+    fontSize: "1.6em",
+    marginBottom: "0.5em",
+    minHeight: "1.6em",
   },
   iconImage: {
-    width: '1.6em',
-    height: '1.6em',
-    objectFit: 'cover'
+    width: "1.6em",
+    height: "1.6em",
+    objectFit: "cover",
   },
-// Title
-name: {
-  fontWeight: 'bold',
-  marginBottom: '0.3em',
-  fontSize: '1.0em',
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-  maxWidth: '100%',
-  display: 'block'
-},
-desc: {
-  fontSize: '0.8em',
-  color: '#666',
-  marginBottom: '0.5em'
-},
-// The container for action icons
-actionIcons: {
-  position: 'absolute',
-  bottom: '0.5em',
-  right: '0.5em',
-  display: 'flex',
-  gap: '0.3em',
-  opacity: 0,
-  transition: 'opacity 0.2s ease'
-},
-// Individual action icons (🚀, ✏️, 🗑️)
-actionIcon: {
-  /** Make them smaller so they fit inside the card nicely */
-  fontSize: '0.9em',
-  lineHeight: '1',
-  cursor: 'pointer'
-}
+  // Title
+  name: {
+    fontWeight: "bold",
+    marginBottom: "0.3em",
+    fontSize: "1.0em",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    maxWidth: "100%",
+    display: "block",
+  },
+  desc: {
+    fontSize: "0.8em",
+    color: "#666",
+    marginBottom: "0.5em",
+  },
+  // The container for action icons
+  actionIcons: {
+    position: "absolute",
+    bottom: "0.5em",
+    right: "0.5em",
+    display: "flex",
+    gap: "0.3em",
+    opacity: 0,
+    transition: "opacity 0.2s ease",
+  },
+  // Individual action icons (🚀, ✏️, 🗑️)
+  actionIcon: {
+    /** Make them smaller so they fit inside the card nicely */
+    fontSize: "0.9em",
+    lineHeight: "1",
+    cursor: "pointer",
+  },
 };
 
 export default Presets;

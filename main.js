@@ -1,7 +1,7 @@
-const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const { spawn, exec } = require('child_process');
+const { app, BrowserWindow, ipcMain, shell, dialog } = require("electron");
+const path = require("path");
+const fs = require("fs");
+const { spawn, exec } = require("child_process");
 
 let mainWindow;
 
@@ -12,72 +12,72 @@ function createWindow() {
     resizable: false,
     autoHideMenuBar: true,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, "preload.js"),
       nodeIntegration: false,
-      contextIsolation: true
-    }
+      contextIsolation: true,
+    },
   });
 
   mainWindow.setMenuBarVisibility(false);
-  mainWindow.loadFile('public/index.html');
-  // mainWindow.webContents.openDevTools(); // For debugging
+  mainWindow.loadFile("public/index.html");
+  mainWindow.webContents.openDevTools(); // For debugging
 }
 
 app.whenReady().then(() => {
   createWindow();
-  app.on('activate', () => {
+  app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
+app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
 });
 
 // ---------- LOAD PRESETS ----------
 
 let presets = [];
-const presetsPath = path.join(__dirname, 'presets.json');
+const presetsPath = path.join(__dirname, "presets.json");
 
 try {
-  const data = fs.readFileSync(presetsPath, 'utf8');
+  const data = fs.readFileSync(presetsPath, "utf8");
   const parsed = JSON.parse(data);
   presets = parsed.presets || [];
 } catch (err) {
-  console.error('Error loading presets:', err);
+  console.error("Error loading presets:", err);
 }
 
 function updatePresetsFile() {
   fs.writeFile(presetsPath, JSON.stringify({ presets }, null, 2), (err) => {
     if (err) {
-      console.error('Failed to update presets file:', err);
+      console.error("Failed to update presets file:", err);
     }
   });
 }
 
 // ---------- IPC HANDLERS ----------
 
-ipcMain.handle('get-presets', async () => {
+ipcMain.handle("get-presets", async () => {
   return presets;
 });
 
-ipcMain.handle('launch-preset', async (event, presetName) => {
-  const preset = presets.find(p => p.name === presetName);
+ipcMain.handle("launch-preset", async (event, presetName) => {
+  const preset = presets.find((p) => p.name === presetName);
   if (!preset) {
     return { success: false, message: "Preset not found" };
   }
   for (const item of preset.items) {
-    if (item.type === 'url') {
+    if (item.type === "url") {
       shell.openExternal(item.target);
-    } else if (item.type === 'app') {
+    } else if (item.type === "app") {
       await launchApplication(item);
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
   return { success: true };
 });
 
-ipcMain.handle('create-preset', async (event, newPreset) => {
+ipcMain.handle("create-preset", async (event, newPreset) => {
   if (!newPreset.name || !Array.isArray(newPreset.items)) {
     return { success: false, message: "Invalid preset data" };
   }
@@ -86,25 +86,25 @@ ipcMain.handle('create-preset', async (event, newPreset) => {
   return { success: true };
 });
 
-ipcMain.handle('update-preset', async (event, updatedPreset) => {
+ipcMain.handle("update-preset", async (event, updatedPreset) => {
   if (!updatedPreset.oldName || !updatedPreset.newName) {
     return { success: false, message: "Invalid update data" };
   }
-  const idx = presets.findIndex(p => p.name === updatedPreset.oldName);
+  const idx = presets.findIndex((p) => p.name === updatedPreset.oldName);
   if (idx < 0) {
     return { success: false, message: "Preset not found" };
   }
   // Overwrite with new data
   presets[idx].name = updatedPreset.newName;
-  presets[idx].description = updatedPreset.description || '';
+  presets[idx].description = updatedPreset.description || "";
   presets[idx].items = updatedPreset.items || [];
   presets[idx].icon = updatedPreset.icon;
   updatePresetsFile();
   return { success: true };
 });
 
-ipcMain.handle('remove-preset', async (event, presetName) => {
-  const idx = presets.findIndex(p => p.name === presetName);
+ipcMain.handle("remove-preset", async (event, presetName) => {
+  const idx = presets.findIndex((p) => p.name === presetName);
   if (idx < 0) {
     return { success: false, message: "Preset not found" };
   }
@@ -113,21 +113,21 @@ ipcMain.handle('remove-preset', async (event, presetName) => {
   return { success: true };
 });
 
-ipcMain.handle('focus-window', () => {
+ipcMain.handle("focus-window", () => {
   if (mainWindow) {
     mainWindow.focus();
   }
 });
 
-ipcMain.handle('browse-for-exe', async () => {
+ipcMain.handle("browse-for-exe", async () => {
   // Show a file dialog for picking an executable (on Windows, .exe)
   const result = await dialog.showOpenDialog({
-    title: 'Select Executable',
-    properties: ['openFile'],
+    title: "Select Executable",
+    properties: ["openFile"],
     filters: [
-      { name: 'Executables', extensions: ['exe', 'app'] } 
+      { name: "Executables", extensions: ["exe", "app"] },
       // adjust for Mac (.app), Linux, or more
-    ]
+    ],
   });
   if (result.canceled || result.filePaths.length === 0) {
     return null;
@@ -143,9 +143,9 @@ function runCommand(command) {
       const child = spawn(command, {
         shell: true,
         detached: true,
-        stdio: 'ignore'
+        stdio: "ignore",
       });
-      child.on('error', err => reject(err));
+      child.on("error", (err) => reject(err));
       child.unref();
       resolve();
     } catch (err) {
@@ -156,9 +156,8 @@ function runCommand(command) {
 
 function checkCommandExists(command) {
   return new Promise((resolve) => {
-    const checkCmd = process.platform === 'win32'
-      ? `where ${command}`
-      : `which ${command}`;
+    const checkCmd =
+      process.platform === "win32" ? `where ${command}` : `which ${command}`;
     exec(checkCmd, (error, stdout) => {
       if (error || !stdout) {
         resolve(false);
@@ -171,16 +170,17 @@ function checkCommandExists(command) {
 
 async function promptForAppPath(item) {
   await dialog.showMessageBox(mainWindow, {
-    type: 'warning',
-    title: 'App Not Found',
-    message: `We couldn't locate "${item.target}".\nPlease select the executable file for this app.`
+    type: "warning",
+    title: "App Not Found",
+    message: `We couldn't locate "${item.target}".\nPlease select the executable file for this app.`,
   });
   const result = await dialog.showOpenDialog(mainWindow, {
     title: `Select executable for ${item.target}`,
-    properties: ['openFile'],
-    filters: process.platform === 'win32'
-      ? [{ name: 'Executables', extensions: ['exe'] }]
-      : []
+    properties: ["openFile"],
+    filters:
+      process.platform === "win32"
+        ? [{ name: "Executables", extensions: ["exe"] }]
+        : [],
   });
   if (!result.canceled && result.filePaths.length > 0) {
     return result.filePaths[0];
@@ -193,7 +193,7 @@ async function launchApplication(item) {
   let isAbsolutePath = path.isAbsolute(target);
 
   // If on Windows and not absolute, check PATH
-  if (process.platform === 'win32' && !isAbsolutePath) {
+  if (process.platform === "win32" && !isAbsolutePath) {
     const exists = await checkCommandExists(target);
     if (!exists) {
       console.error(`Command "${target}" not found in PATH.`);
@@ -210,13 +210,13 @@ async function launchApplication(item) {
   }
 
   let command = "";
-  if (process.platform === 'win32') {
+  if (process.platform === "win32") {
     if (isAbsolutePath) {
       command = `"${target}"`;
     } else {
       command = `start "" "${target}"`;
     }
-  } else if (process.platform === 'darwin') {
+  } else if (process.platform === "darwin") {
     if (isAbsolutePath) {
       command = `"${target}"`;
     } else {

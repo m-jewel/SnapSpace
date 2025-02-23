@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 
 function EditPreset({ preset, onSave, onCancel }) {
-  const [oldName] = useState(preset?.name || '');
-  const [newName, setNewName] = useState(preset?.name || '');
-  const [description, setDescription] = useState(preset?.description || '');
-  const [icon, setIcon] = useState(preset?.icon || '');
+  const [oldName] = useState(preset?.name || "");
+  const [newName, setNewName] = useState(preset?.name || "");
+  const [description, setDescription] = useState(preset?.description || "");
+  const [icon, setIcon] = useState(preset?.icon || "");
   const [items, setItems] = useState(preset?.items || []);
 
   useEffect(() => {
+    window.electronAPI.receive("update-preset", (data) => {
+      console.log("Presets updated:", data);
+    });
     if (!preset) {
       alert("No preset to edit.");
       onCancel();
@@ -28,14 +31,14 @@ function EditPreset({ preset, onSave, onCancel }) {
   const handleBrowseExe = (index) => {
     window.electronAPI.browseForExe().then((filePath) => {
       if (filePath) {
-        updateItem(index, 'target', filePath);
+        updateItem(index, "target", filePath);
       }
     });
   };
 
   // Add a new item row
   const addItem = () => {
-    setItems([...items, { type: 'url', target: '' }]);
+    setItems([...items, { type: "url", target: "" }]);
   };
 
   // Update an item (type or target)
@@ -60,7 +63,7 @@ function EditPreset({ preset, onSave, onCancel }) {
     }
 
     // Check for empty items
-    const hasEmptyItem = items.some(item => !item.target.trim());
+    const hasEmptyItem = items.some((item) => !item.target.trim());
     if (hasEmptyItem) {
       alert("One or more items are empty. Please fill them or remove them.");
       return;
@@ -73,8 +76,8 @@ function EditPreset({ preset, onSave, onCancel }) {
     }
 
     // Validate URLs
-    const hasInvalidUrl = items.some(item => {
-      if (item.type === 'url') {
+    const hasInvalidUrl = items.some((item) => {
+      if (item.type === "url") {
         return !isValidUrl(item.target.trim());
       }
       return false;
@@ -90,7 +93,7 @@ function EditPreset({ preset, onSave, onCancel }) {
       newName: newName.trim(),
       description: description.trim(),
       icon: icon.trim(),
-      items
+      items,
     };
 
     // Send the updated preset to main process
@@ -153,7 +156,7 @@ function EditPreset({ preset, onSave, onCancel }) {
           <select
             style={styles.select}
             value={item.type}
-            onChange={(e) => updateItem(index, 'type', e.target.value)}
+            onChange={(e) => updateItem(index, "type", e.target.value)}
           >
             <option value="url">URL</option>
             <option value="app">App</option>
@@ -161,12 +164,17 @@ function EditPreset({ preset, onSave, onCancel }) {
           <input
             style={styles.inputItem}
             type="text"
-            placeholder={item.type === 'url' ? 'https://example.com' : 'AppName or path'}
+            placeholder={
+              item.type === "url" ? "https://example.com" : "AppName or path"
+            }
             value={item.target}
-            onChange={(e) => updateItem(index, 'target', e.target.value)}
+            onChange={(e) => updateItem(index, "target", e.target.value)}
           />
-          {item.type === 'app' && (
-            <button style={styles.browseBtn} onClick={() => handleBrowseExe(index)}>
+          {item.type === "app" && (
+            <button
+              style={styles.browseBtn}
+              onClick={() => handleBrowseExe(index)}
+            >
               Browse
             </button>
           )}
@@ -195,94 +203,94 @@ function EditPreset({ preset, onSave, onCancel }) {
 // --- STYLES ---
 const styles = {
   container: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: '20px',
-    background: '#fff',
-    borderRadius: '20px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    maxWidth: '400px',
-    margin: '0 auto'
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: "20px",
+    background: "#fff",
+    borderRadius: "20px",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+    maxWidth: "400px",
+    margin: "0 auto",
   },
   header: {
-    fontSize: '1.8rem',
-    marginBottom: '20px',
-    color: '#333'
+    fontSize: "1.8rem",
+    marginBottom: "20px",
+    color: "#333",
   },
   fieldGroup: {
-    width: '100%',
-    marginBottom: '15px'
+    width: "100%",
+    marginBottom: "15px",
   },
   input: {
-    width: '100%',
-    padding: '10px',
-    borderRadius: '8px',
-    border: '1px solid #ccc',
-    boxSizing: 'border-box'
+    width: "100%",
+    padding: "10px",
+    borderRadius: "8px",
+    border: "1px solid #ccc",
+    boxSizing: "border-box",
   },
   itemRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    marginBottom: '10px'
+    display: "flex",
+    alignItems: "center",
+    gap: "6px",
+    marginBottom: "10px",
   },
   select: {
-    padding: '6px 10px',
-    width: '80px',
-    borderRadius: '6px',
-    border: '1px solid #ccc'
+    padding: "6px 10px",
+    width: "80px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
   },
   inputItem: {
     flex: 1,
-    padding: '8px',
-    borderRadius: '6px',
-    border: '1px solid #ccc'
+    padding: "8px",
+    borderRadius: "6px",
+    border: "1px solid #ccc",
   },
   buttonRow: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '10px',
-    flexWrap: 'wrap',
-    marginTop: '15px'
+    display: "flex",
+    justifyContent: "center",
+    gap: "10px",
+    flexWrap: "wrap",
+    marginTop: "15px",
   },
   primaryBtn: {
-    padding: '6px 12px',
-    margin: '5px',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-    background: '#4a4a4a',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-    transition: 'transform 0.2s, background 0.2s'
+    padding: "6px 12px",
+    margin: "5px",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+    background: "#4a4a4a",
+    color: "white",
+    border: "none",
+    borderRadius: "8px",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
+    transition: "transform 0.2s, background 0.2s",
   },
   secondaryBtn: {
-    padding: '6px 12px',
-    margin: '5px',
-    cursor: 'pointer',
-    fontSize: '0.9rem',
-    background: '#f4f4f9',
-    color: '#333',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.2s, background 0.2s'
+    padding: "6px 12px",
+    margin: "5px",
+    cursor: "pointer",
+    fontSize: "0.9rem",
+    background: "#f4f4f9",
+    color: "#333",
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    transition: "transform 0.2s, background 0.2s",
   },
   addBtn: {
-    padding: '6px 12px',
-    margin: '10px 0',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-    background: '#e0e0e0',
-    color: '#333',
-    border: '1px solid #ccc',
-    borderRadius: '8px',
-    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-    transition: 'transform 0.2s, background 0.2s'
-  }
+    padding: "6px 12px",
+    margin: "10px 0",
+    cursor: "pointer",
+    fontSize: "0.85rem",
+    background: "#e0e0e0",
+    color: "#333",
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    transition: "transform 0.2s, background 0.2s",
+  },
 };
 
 export default EditPreset;

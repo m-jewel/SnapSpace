@@ -1,43 +1,24 @@
 {
   "presets": [
     {
-      "name": "Study Mode",
-      "description": "",
-      "items": [
-        {
-          "type": "url",
-          "target": "https://canvas.usask.ca/"
-        }
-      ],
-      "icon": "😟"
-    },
-    {
-      "name": "essay writing",
+      "name": "entertainment",
       "description": "",
       "icon": "",
       "items": [
         {
-          "type": "app",
-          "target": "C:\\Program Files (x86)\\Microsoft Office\\root\\Office16\\WINWORD.EXE"
-        },
-        {
           "type": "url",
-          "target": "https://docs.google.com"
+          "target": "https://kisskh.co/"
         }
       ]
     },
     {
-      "name": "entertainment",
-      "description": "watching with my <3",
-      "icon": "🤗",
+      "name": "study",
+      "description": "",
+      "icon": "😺",
       "items": [
         {
           "type": "url",
-          "target": "https://kisskh.co/"
-        },
-        {
-          "type": "app",
-          "target": "C:\\Users\\Administrator\\AppData\\Local\\Discord\\Update.exe"
+          "target": "https://tools.picsart.com/text/emojis/"
         }
       ]
     }
