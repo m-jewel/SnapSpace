@@ -1,42 +1,20 @@
 {
   "presets": [
     {
-      "name": "entertainment",
-      "description": "to watch with my <3",
-      "icon": "🥰",
+      "name": "Study Mode",
+      "description": "",
+      "icon": "📓",
       "items": [
         {
           "type": "url",
-          "target": "https://kisskh.co/"
+          "target": "https://cas.usask.ca"
         }
       ]
     },
     {
-      "name": "stuDYING",
+      "name": "Emojis",
       "description": "",
-      "icon": "😺",
-      "items": [
-        {
-          "type": "url",
-          "target": "https://tools.picsart.com/text/emojis/"
-        }
-      ]
-    },
-    {
-      "name": "weather app",
-      "description": "",
-      "icon": "〰️",
-      "items": [
-        {
-          "type": "url",
-          "target": "https://openweathermap.org/api"
-        }
-      ]
-    },
-    {
-      "name": "emojis",
-      "description": "",
-      "icon": "🐼",
+      "icon": "🦸‍♀️",
       "items": [
         {
           "type": "url",

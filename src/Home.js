@@ -16,7 +16,9 @@ function Home({ onContinue, lastPreset, hasPresets, onCreateNew }) {
     icon: null,
   });
   const [retryCount, setRetryCount] = useState(0);
+  const [validLastPreset, setValidLastPreset] = useState(null);
 
+  // --- SET GREETING & WEATHER ---
   useEffect(() => {
     const hours = new Date().getHours();
     if (hours < 12) {
@@ -36,15 +38,33 @@ function Home({ onContinue, lastPreset, hasPresets, onCreateNew }) {
           fetchWeather(latitude, longitude);
         } else {
           console.error("IP Geolocation failed, using default location.");
-          fetchWeather(45.815, 15.9819); // Default to Zagreb, Croatia
+          fetchWeather(52.1332, -106.67); // Default to Saskatoon, SK, Canada
         }
       })
       .catch((err) => {
         console.error("Geolocation error:", err);
-        fetchWeather(45.815, 15.9819); // Default to Zagreb, Croatia
+        fetchWeather(52.1332, -106.67); // Default to Saskatoon, SK, Canada
       });
   }, [retryCount]);
 
+  // --- CHECK VALID LAST PRESET ---
+  useEffect(() => {
+    if (lastPreset && hasPresets) {
+      window.electronAPI.getPresets().then((data) => {
+        const presetExists = data.some((preset) => preset.name === lastPreset);
+        if (presetExists) {
+          setValidLastPreset(lastPreset);
+        } else {
+          localStorage.removeItem("lastUsedPreset");
+          setValidLastPreset(null);
+        }
+      });
+    } else {
+      setValidLastPreset(null);
+    }
+  }, [lastPreset, hasPresets]);
+
+  // --- FETCH WEATHER ---
   const fetchWeather = (latitude, longitude) => {
     fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`
@@ -60,7 +80,6 @@ function Home({ onContinue, lastPreset, hasPresets, onCreateNew }) {
       })
       .catch((error) => {
         console.error("Error fetching weather data:", error);
-        // Retry after 3 seconds
         setTimeout(() => setRetryCount(retryCount + 1), 3000);
       });
   };
@@ -131,6 +150,7 @@ function Home({ onContinue, lastPreset, hasPresets, onCreateNew }) {
     }
   };
 
+  // --- RENDER ---
   return (
     <div style={styles.container}>
       <div style={styles.weatherContainer}>
@@ -153,10 +173,12 @@ function Home({ onContinue, lastPreset, hasPresets, onCreateNew }) {
 
       {hasPresets && (
         <>
-          {lastPreset && (
+          {validLastPreset ? (
             <button style={styles.button} onClick={() => onContinue("resume")}>
-              Resume Last Used Preset: {lastPreset}
+              Resume Last Used Preset: {validLastPreset}
             </button>
+          ) : (
+            <p>No recent preset to resume.</p>
           )}
           <button style={styles.button} onClick={() => onContinue("presets")}>
             Go to Presets
