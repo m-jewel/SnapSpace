@@ -2,8 +2,8 @@
   "presets": [
     {
       "name": "entertainment",
-      "description": "",
-      "icon": "",
+      "description": "to watch with my <3",
+      "icon": "🥰",
       "items": [
         {
           "type": "url",
@@ -12,7 +12,7 @@
       ]
     },
     {
-      "name": "study",
+      "name": "stuDYING",
       "description": "",
       "icon": "😺",
       "items": [

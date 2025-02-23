@@ -1,27 +1,42 @@
 import React, { useRef, useState } from "react";
 
+/* =====================
+    UTILITY FUNCTIONS
+===================== */
+
 /** Checks if a string is a URL (for icon images) */
-function isUrl(str) {
+const isUrl = (str) => {
   try {
     new URL(str);
     return true;
   } catch {
     return false;
   }
-}
+};
 
 /** Renders a preset's icon (URL => <img>, else text/emoji => <span>) */
-function renderIcon(icon) {
+const renderIcon = (icon) => {
   if (!icon) return "⚙️"; // fallback icon
   if (isUrl(icon)) {
     return <img src={icon} alt="icon" style={styles.iconImage} />;
   }
   return <span>{icon}</span>; // could be an emoji or text
-}
+};
 
-/** Renders a preset's icon (URL => <img>, else text/emoji => <span>) */
-function PresetCard({ presets, preset, onLaunch, onEdit, onRemove, style }) {
+/* =====================
+    COMPONENTS
+===================== */
+
+/** PresetCard Component */
+const PresetCard = ({ presets, preset, onLaunch, onEdit, onRemove, style }) => {
   const [hover, setHover] = useState(false);
+
+  const handleLaunch = () => {
+    const updatedPresets = presets.map((p) =>
+      p.name === preset.name ? { ...p, lastUsedTime: Date.now() } : p
+    );
+    onLaunch(preset.name, updatedPresets);
+  };
 
   return (
     <div
@@ -37,15 +52,6 @@ function PresetCard({ presets, preset, onLaunch, onEdit, onRemove, style }) {
         <div style={styles.desc}>{preset.description}</div>
       )}
 
-      {presets.map((preset, index) => (
-        <div key={`${preset.category}-${preset.id}`}>{preset.name}</div>
-      ))}
-      {presets
-        .filter((p) => p.category && p.name)
-        .map((preset, index) => (
-          <div key={`${preset.name || "unnamed"}-${index}`}>{preset.name}</div>
-        ))}
-
       {/* Hover-based action icons */}
       <div
         style={{
@@ -54,11 +60,7 @@ function PresetCard({ presets, preset, onLaunch, onEdit, onRemove, style }) {
           pointerEvents: hover ? "auto" : "none",
         }}
       >
-        <span
-          style={styles.actionIcon}
-          title="Launch"
-          onClick={() => onLaunch(preset.name)}
-        >
+        <span style={styles.actionIcon} title="Launch" onClick={handleLaunch}>
           🚀
         </span>
         <span
@@ -78,16 +80,17 @@ function PresetCard({ presets, preset, onLaunch, onEdit, onRemove, style }) {
       </div>
     </div>
   );
-}
+};
 
-function Presets({
+/** Presets Component */
+const Presets = ({
   presets,
   onBackHome,
   onLaunch,
   onRemove,
   onEdit,
   onCreateNew,
-}) {
+}) => {
   // Sort presets by lastUsedTime (descending)
   const sortedPresets = [...presets].sort((a, b) => {
     const aTime = a.lastUsedTime || 0;
@@ -95,20 +98,20 @@ function Presets({
     return bTime - aTime;
   });
 
-  // The first item is "most recent", the rest go in the horizontal scroller
+  // Most recent and other presets
   const mostRecent = sortedPresets[0] || null;
   const otherPresets = sortedPresets.slice(1);
 
-  // Ref for the scroller container
+  // Scroller state and ref
   const scrollerRef = useRef(null);
   const [hoverScroller, setHoverScroller] = useState(false);
 
-  // Scroll horizontally by a fixed amount
   const scrollLeft = () => {
     if (scrollerRef.current) {
       scrollerRef.current.scrollBy({ left: -200, behavior: "smooth" });
     }
   };
+
   const scrollRight = () => {
     if (scrollerRef.current) {
       scrollerRef.current.scrollBy({ left: 200, behavior: "smooth" });
@@ -117,7 +120,7 @@ function Presets({
 
   return (
     <div style={styles.container}>
-      {/* Top-left toolbar with small icon buttons */}
+      {/* Toolbar */}
       <div style={styles.toolbar}>
         <button
           style={styles.iconBtn}
@@ -167,7 +170,6 @@ function Presets({
             onMouseEnter={() => setHoverScroller(true)}
             onMouseLeave={() => setHoverScroller(false)}
           >
-            {/* Left arrow button (shows on hover) */}
             {hoverScroller && (
               <button
                 style={{ ...styles.arrowBtn, left: 0 }}
@@ -181,7 +183,7 @@ function Presets({
               {otherPresets.map((p) => (
                 <PresetCard
                   presets={presets}
-                  key={`${mostRecent.name}-${mostRecent.lastUsedTime}`}
+                  key={`${p.name}-${p.lastUsedTime}`}
                   preset={p}
                   onLaunch={onLaunch}
                   onEdit={onEdit}
@@ -191,7 +193,6 @@ function Presets({
               ))}
             </div>
 
-            {/* Right arrow button (shows on hover) */}
             {hoverScroller && (
               <button
                 style={{ ...styles.arrowBtn, right: 0 }}
@@ -205,10 +206,9 @@ function Presets({
       )}
     </div>
   );
-}
+};
 
 // --- STYLES ---
-
 const styles = {
   container: {
     position: "relative",
