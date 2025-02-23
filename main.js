@@ -5,6 +5,9 @@ const { spawn, exec } = require("child_process");
 
 let mainWindow;
 
+const userDataPath = app.getPath("userData");
+const presetsPath = path.join(userDataPath, "presets.json");
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -35,20 +38,24 @@ app.on("window-all-closed", () => {
 });
 
 // ---------- LOAD PRESETS ----------
-
 let presets = [];
-const presetsPath = path.join(__dirname, "presets.json");
 
 try {
-  const data = fs.readFileSync(presetsPath, "utf8");
-  const parsed = JSON.parse(data);
-  presets = parsed.presets || [];
+  // Check if presets.json exists in AppData
+  if (fs.existsSync(presetsPath)) {
+    const data = fs.readFileSync(presetsPath, "utf8");
+    presets = JSON.parse(data);
+  } else {
+    // If not, initialize with empty presets and save the file
+    presets = [];
+    fs.writeFileSync(presetsPath, JSON.stringify(presets, null, 2));
+  }
 } catch (err) {
   console.error("Error loading presets:", err);
 }
 
 function updatePresetsFile() {
-  fs.writeFile(presetsPath, JSON.stringify({ presets }, null, 2), (err) => {
+  fs.writeFile(presetsPath, JSON.stringify(presets, null, 2), (err) => {
     if (err) {
       console.error("Failed to update presets file:", err);
     }
