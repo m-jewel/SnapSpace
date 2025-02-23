@@ -12,14 +12,15 @@ function isUrl(str) {
 
 /** Renders a preset's icon (URL => <img>, else text/emoji => <span>) */
 function renderIcon(icon) {
-  if (!icon) return '⚙️'; // fallback
+  if (!icon) return '⚙️'; // fallback icon
   if (isUrl(icon)) {
     return <img src={icon} alt="icon" style={styles.iconImage} />;
   }
-  return icon; // could be an emoji or text
+  return <span>{icon}</span>; // could be an emoji or text
 }
 
-/** Single card for both "most recent" and the scroller list */
+
+/** Renders a preset's icon (URL => <img>, else text/emoji => <span>) */
 function PresetCard({ preset, onLaunch, onEdit, onRemove, style }) {
   const [hover, setHover] = useState(false);
 
@@ -38,7 +39,8 @@ function PresetCard({ preset, onLaunch, onEdit, onRemove, style }) {
       <div
         style={{
           ...styles.actionIcons,
-          opacity: hover ? 1 : 0
+          opacity: hover ? 1 : 0,
+          pointerEvents: hover ? 'auto' : 'none'
         }}
       >
         <span
@@ -135,6 +137,7 @@ function Presets({
         <div style={styles.recentSection}>
           <h3 style={styles.sectionTitle}>Most Recent Preset</h3>
           <PresetCard
+            key={`${mostRecent.name}-${mostRecent.lastUsedTime}`}
             preset={mostRecent}
             onLaunch={onLaunch}
             onEdit={onEdit}
@@ -163,7 +166,7 @@ function Presets({
             <div style={styles.scroller} ref={scrollerRef}>
               {otherPresets.map((p) => (
                 <PresetCard
-                  key={p.name}
+                  key={`${mostRecent.name}-${mostRecent.lastUsedTime}`}
                   preset={p}
                   onLaunch={onLaunch}
                   onEdit={onEdit}

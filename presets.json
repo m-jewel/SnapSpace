@@ -40,17 +40,6 @@
           "target": "C:\\Users\\Administrator\\AppData\\Local\\Discord\\Update.exe"
         }
       ]
-    },
-    {
-      "name": "testing edit mode (edited)",
-      "description": "faFEF",
-      "icon": "😐",
-      "items": [
-        {
-          "type": "url",
-          "target": "https://freecash.com/earn"
-        }
-      ]
     }
   ]
 }
