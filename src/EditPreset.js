@@ -12,10 +12,6 @@ function EditPreset({ preset, onSave, onCancel, existingPresets }) {
 
   // --- EFFECTS ---
   useEffect(() => {
-    window.electronAPI.receive("update-preset", (data) => {
-      console.log("Presets updated:", data);
-    });
-
     if (!preset) {
       toast.error("No preset to edit.");
       onCancel();
@@ -23,7 +19,6 @@ function EditPreset({ preset, onSave, onCancel, existingPresets }) {
   }, [preset, onCancel]);
 
   // --- HELPERS ---
-  // URL Validation
   const isValidUrl = (value) => {
     try {
       new URL(value);
@@ -222,6 +217,17 @@ function EditPreset({ preset, onSave, onCancel, existingPresets }) {
         />
       </div>
 
+      <div style={styles.fieldGroup}>
+        <label style={styles.label}>Icon (optional)</label>
+        <input
+          style={styles.input}
+          type="text"
+          placeholder="e.g., 📚 or https://example.com/icon.png"
+          value={icon}
+          onChange={handleInputChange(setIcon)}
+        />
+      </div>
+
       <h3 style={styles.subheader}>Items to Launch</h3>
       {renderItems()}
 
@@ -253,16 +259,25 @@ const styles = {
     borderRadius: "20px",
     boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
     maxWidth: "400px",
+    width: "90%",
     margin: "0 auto",
   },
   header: {
     fontSize: "1.8rem",
     marginBottom: "20px",
     color: "#333",
+    textAlign: "center",
   },
   fieldGroup: {
     width: "100%",
     marginBottom: "15px",
+    display: "flex",
+    flexDirection: "column",
+  },
+  label: {
+    marginBottom: "5px",
+    fontWeight: "bold",
+    fontSize: "0.9rem",
   },
   input: {
     width: "100%",
@@ -270,6 +285,11 @@ const styles = {
     borderRadius: "8px",
     border: "1px solid #ccc",
     boxSizing: "border-box",
+    transition: "border 0.2s",
+  },
+  inputFocus: {
+    border: "1px solid #007bff",
+    outline: "none",
   },
   itemRow: {
     display: "flex",
@@ -279,15 +299,24 @@ const styles = {
   },
   select: {
     padding: "6px 10px",
-    width: "80px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
+    fontSize: "0.85rem",
+    color: "#333",
+    background: "#f4f4f9",
+    borderRadius: "8px",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    transition: "border 0.2s",
+    appearance: "none",
+    cursor: "pointer",
+    width: "30%",
+    boxSizing: "border-box",
   },
   inputItem: {
     flex: 1,
-    padding: "8px",
-    borderRadius: "6px",
+    padding: "10px",
+    fontSize: "0.9rem",
+    borderRadius: "8px",
     border: "1px solid #ccc",
+    boxSizing: "border-box",
   },
   buttonRow: {
     display: "flex",
@@ -298,7 +327,6 @@ const styles = {
   },
   primaryBtn: {
     padding: "6px 12px",
-    margin: "5px",
     cursor: "pointer",
     fontSize: "0.9rem",
     background: "#4a4a4a",
@@ -310,7 +338,6 @@ const styles = {
   },
   secondaryBtn: {
     padding: "6px 12px",
-    margin: "5px",
     cursor: "pointer",
     fontSize: "0.9rem",
     background: "#f4f4f9",
@@ -342,6 +369,20 @@ const styles = {
     cursor: "pointer",
     transition: "transform 0.2s, background 0.2s",
     marginLeft: "6px",
+  },
+  browseBtnHover: {
+    background: "#d5d5d5",
+    transform: "scale(1.02)",
+  },
+  removeBtn: {
+    padding: "6px 8px",
+    fontSize: "0.85rem",
+    background: "#f4f4f9",
+    color: "#333",
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    cursor: "pointer",
+    marginLeft: "8px",
   },
 };
 
