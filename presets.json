@@ -1,14 +1,15 @@
 {
   "presets": [
     {
-      "name": "study",
+      "name": "Study Mode",
       "description": "",
       "items": [
         {
           "type": "url",
           "target": "https://canvas.usask.ca/"
         }
-      ]
+      ],
+      "icon": "😟"
     },
     {
       "name": "essay writing",
@@ -28,7 +29,7 @@
     {
       "name": "entertainment",
       "description": "watching with my <3",
-      "icon": "😶‍🌫️",
+      "icon": "🤗",
       "items": [
         {
           "type": "url",
@@ -37,17 +38,6 @@
         {
           "type": "app",
           "target": "C:\\Users\\Administrator\\AppData\\Local\\Discord\\Update.exe"
-        }
-      ]
-    },
-    {
-      "name": "fFFW",
-      "description": "",
-      "icon": "",
-      "items": [
-        {
-          "type": "url",
-          "target": "https://tools.picsart.com/text/emojis/"
         }
       ]
     }

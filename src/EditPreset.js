@@ -104,7 +104,6 @@ function EditPreset({ preset, onSave, onCancel }) {
     });
   };
 
-  // If for some reason we have no preset, return null to avoid errors
   if (!preset) return null;
 
   return (
@@ -148,44 +147,7 @@ function EditPreset({ preset, onSave, onCancel }) {
           value={icon}
           onChange={(e) => setIcon(e.target.value)}
         />
-        <p style={styles.hint}>
-          Enter an emoji or an image URL (will display in presets list).
-        </p>
       </div>
-
-      <h3 style={styles.subheader}>Items:</h3>
-      {items.map((item, index) => (
-        <div key={index} style={styles.itemRow}>
-          <select
-            style={styles.select}
-            value={item.type}
-            onChange={(e) => updateItem(index, 'type', e.target.value)}
-          >
-            <option value="url">URL</option>
-            <option value="app">App</option>
-          </select>
-          <input
-            style={styles.inputItem}
-            type="text"
-            placeholder={item.type === 'url' ? 'https://example.com' : 'AppName or path'}
-            value={item.target}
-            onChange={(e) => updateItem(index, 'target', e.target.value)}
-          />
-          {/* Only show "Browse" if it's an app */}
-          {item.type === 'app' && (
-            <button style={styles.browseBtn} onClick={() => handleBrowseExe(index)}>
-              Browse
-            </button>
-          )}
-          <button style={styles.removeBtn} onClick={() => removeItem(index)}>
-            ✕
-          </button>
-        </div>
-      ))}
-
-      <button style={styles.addBtn} onClick={addItem}>
-        + Add Another Item
-      </button>
 
       <div style={styles.buttonRow}>
         <button style={styles.primaryBtn} onClick={handleSave}>
@@ -200,124 +162,77 @@ function EditPreset({ preset, onSave, onCancel }) {
 }
 
 // --- STYLES ---
-
 const styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
-    alignSelf: 'center',
-    justifyContent: 'flex-start',
-    width: '70%',
-    maxWidth: '600px',
-    margin: '0 auto',
-    marginTop: '30px'
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px',
+    background: '#fff',
+    borderRadius: '20px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    maxWidth: '400px',
+    margin: '0 auto'
   },
   header: {
-    fontSize: '1.5rem',
-    marginBottom: '10px'
+    fontSize: '1.8rem',
+    marginBottom: '20px',
+    color: '#333'
   },
   fieldGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    marginBottom: '10px'
-  },
-  label: {
-    fontSize: '0.9rem',
-    marginBottom: '4px',
-    fontWeight: 'bold'
-  },
-  required: {
-    color: '#f00',
-    fontSize: '0.8rem'
-  },
-  optional: {
-    color: '#999',
-    fontSize: '0.8rem'
+    width: '100%',
+    marginBottom: '15px'
   },
   input: {
-    padding: '8px',
-    fontSize: '0.9rem',
-    borderRadius: '4px',
-    border: '1px solid #ccc'
-  },
-  hint: {
-    margin: '4px 0',
-    fontSize: '0.8rem',
-    color: '#666'
-  },
-  subheader: {
-    fontSize: '1.1rem',
-    margin: '15px 0 8px 0'
-  },
-  itemRow: {
-    display: 'flex',
-    alignItems: 'center',
-    marginBottom: '8px'
-  },
-  select: {
-    padding: '6px',
-    fontSize: '0.9rem',
-    marginRight: '6px',
-    borderRadius: '4px',
-    border: '1px solid #ccc'
-  },
-  inputItem: {
-    flex: 1,
-    padding: '8px',
-    fontSize: '0.9rem',
-    borderRadius: '4px',
-    border: '1px solid #ccc'
-  },
-  browseBtn: {
-    marginLeft: '6px',
-    backgroundColor: '#34495e',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '6px 10px',
-    cursor: 'pointer'
-  },
-  removeBtn: {
-    marginLeft: '6px',
-    backgroundColor: '#e74c3c',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '6px 10px',
-    cursor: 'pointer'
-  },
-  addBtn: {
-    backgroundColor: '#3498db',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '8px 12px',
-    fontSize: '0.9rem',
-    cursor: 'pointer',
-    alignSelf: 'flex-start'
+    width: '100%',
+    padding: '10px',
+    borderRadius: '8px',
+    border: '1px solid #ccc',
+    boxSizing: 'border-box'
   },
   buttonRow: {
     display: 'flex',
-    marginTop: '20px',
-    gap: '10px'
+    justifyContent: 'center',
+    gap: '10px',
+    flexWrap: 'wrap',
+    marginTop: '15px'
   },
   primaryBtn: {
-    backgroundColor: '#2ecc71',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '10px 16px',
+    padding: '6px 12px',
+    margin: '5px',
+    cursor: 'pointer',
     fontSize: '0.9rem',
-    cursor: 'pointer'
+    background: '#4a4a4a',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    transition: 'transform 0.2s, background 0.2s'
   },
   secondaryBtn: {
-    backgroundColor: '#bdc3c7',
-    color: '#2c3e50',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '10px 16px',
+    padding: '6px 12px',
+    margin: '5px',
+    cursor: 'pointer',
     fontSize: '0.9rem',
-    cursor: 'pointer'
+    background: '#f4f4f9',
+    color: '#333',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'transform 0.2s, background 0.2s'
+  },
+  addBtn: {
+    padding: '6px 12px',
+    margin: '10px 0',
+    cursor: 'pointer',
+    fontSize: '0.85rem',
+    background: '#e0e0e0',
+    color: '#333',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'transform 0.2s, background 0.2s'
   }
 };
 
