@@ -9,8 +9,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   removePreset: (name) => ipcRenderer.invoke("remove-preset", name),
   focusWindow: () => ipcRenderer.invoke("focus-window"),
   browseForExe: () => ipcRenderer.invoke("browse-for-exe"),
+  browseForFile: () => ipcRenderer.invoke("browse-for-file"),
+  browseForFolder: () => ipcRenderer.invoke("browse-for-folder"),
 
-  // Add receive method with all valid channels
   receive: (channel, func) => {
     const validChannels = [
       "get-presets",
@@ -20,6 +21,8 @@ contextBridge.exposeInMainWorld("electronAPI", {
       "remove-preset",
       "focus-window",
       "browse-for-exe",
+      "browse-for-file",
+      "browse-for-folder",
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (event, ...args) => func(...args));

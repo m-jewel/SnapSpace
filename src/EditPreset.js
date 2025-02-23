@@ -54,12 +54,26 @@ function EditPreset({ preset, onSave, onCancel, existingPresets }) {
     });
   };
 
-  const handleBrowseExe = (index) => {
-    window.electronAPI.browseForExe().then((filePath) => {
-      if (filePath) {
-        handleItemChange(index, "target", filePath);
-      }
-    });
+  const handleBrowse = (index, type) => {
+    if (type === "app") {
+      window.electronAPI.browseForExe().then((filePath) => {
+        if (filePath) {
+          handleItemChange(index, "target", filePath);
+        }
+      });
+    } else if (type === "file") {
+      window.electronAPI.browseForFile().then((filePath) => {
+        if (filePath) {
+          handleItemChange(index, "target", filePath);
+        }
+      });
+    } else if (type === "folder") {
+      window.electronAPI.browseForFolder().then((folderPath) => {
+        if (folderPath) {
+          handleItemChange(index, "target", folderPath);
+        }
+      });
+    }
   };
 
   // --- VALIDATION ---
@@ -83,6 +97,7 @@ function EditPreset({ preset, onSave, onCancel, existingPresets }) {
       toast.error("Please add at least one item.");
     }
 
+    // URL Validation only for URL type
     const hasInvalidUrl = items.some(
       (item) => item.type === "url" && !isValidUrl(item.target.trim())
     );
@@ -91,11 +106,11 @@ function EditPreset({ preset, onSave, onCancel, existingPresets }) {
       toast.error("One or more URLs are invalid.");
     }
 
-    // Check for duplicate preset name excluding the current preset ---
+    // Check for duplicate preset name excluding the current preset
     const isDuplicateName = existingPresets.some(
       (preset) =>
         preset.name.toLowerCase() === newName.trim().toLowerCase() &&
-        preset.name.toLowerCase() !== oldName.toLowerCase() // Exclude current preset name
+        preset.name.toLowerCase() !== oldName.toLowerCase()
     );
 
     if (isDuplicateName) {
@@ -140,20 +155,32 @@ function EditPreset({ preset, onSave, onCancel, existingPresets }) {
         >
           <option value="url">URL</option>
           <option value="app">App</option>
+          <option value="file">File</option>
+          <option value="folder">Folder</option>
         </select>
 
         <input
           style={styles.inputItem}
           type="text"
-          placeholder={item.type === "url" ? "https://example.com" : "App path"}
+          placeholder={
+            item.type === "url"
+              ? "https://example.com"
+              : item.type === "app"
+              ? "App path"
+              : item.type === "file"
+              ? "Select a file"
+              : "Select a folder"
+          }
           value={item.target}
           onChange={(e) => handleItemChange(index, "target", e.target.value)}
         />
 
-        {item.type === "app" && (
+        {(item.type === "app" ||
+          item.type === "file" ||
+          item.type === "folder") && (
           <button
             style={styles.browseBtn}
-            onClick={() => handleBrowseExe(index)}
+            onClick={() => handleBrowse(index, item.type)}
           >
             Browse
           </button>
@@ -195,25 +222,12 @@ function EditPreset({ preset, onSave, onCancel, existingPresets }) {
         />
       </div>
 
-      <div style={styles.fieldGroup}>
-        <label style={styles.label}>Icon (optional)</label>
-        <input
-          style={styles.input}
-          type="text"
-          placeholder="e.g., 📚 or https://example.com/icon.png"
-          value={icon}
-          onChange={handleInputChange(setIcon)}
-        />
-      </div>
-
       <h3 style={styles.subheader}>Items to Launch</h3>
       {renderItems()}
 
       <button style={styles.addBtn} onClick={addItem}>
         + Add Another Item
       </button>
-
-      {errors.items && <p style={styles.errorText}>{errors.items}</p>}
 
       <div style={styles.buttonRow}>
         <button style={styles.primaryBtn} onClick={handleSave}>
@@ -317,6 +331,17 @@ const styles = {
     borderRadius: "8px",
     boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
     transition: "transform 0.2s, background 0.2s",
+  },
+  browseBtn: {
+    padding: "6px 12px",
+    fontSize: "0.85rem",
+    background: "#e0e0e0",
+    border: "1px solid #ccc",
+    borderRadius: "8px",
+    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
+    cursor: "pointer",
+    transition: "transform 0.2s, background 0.2s",
+    marginLeft: "6px",
   },
 };
 

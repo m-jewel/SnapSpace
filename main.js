@@ -64,15 +64,30 @@ ipcMain.handle("get-presets", async () => {
 ipcMain.handle("launch-preset", async (event, presetName) => {
   const preset = presets.find((p) => p.name === presetName);
   if (!preset) {
+    console.error(`Preset not found: ${presetName}`);
     return { success: false, message: "Preset not found" };
   }
 
   for (const item of preset.items) {
-    if (item.type === "url") {
-      shell.openExternal(item.target);
-    } else if (item.type === "app") {
-      await launchApplication(item);
-      await new Promise((resolve) => setTimeout(resolve, 500));
+    try {
+      if (item.type === "url") {
+        shell.openExternal(item.target);
+      } else if (item.type === "app") {
+        await launchApplication(item);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      } else if (item.type === "file" || item.type === "folder") {
+        // Open file or folder using shell.openPath()
+        const result = await shell.openPath(item.target);
+
+        // If result is not empty, it indicates an error
+        if (result) {
+          console.error(`Failed to open ${item.target}: ${result}`);
+        } else {
+          console.log(`Successfully opened: ${item.target}`);
+        }
+      }
+    } catch (err) {
+      console.error(`Error launching ${item.target}:`, err);
     }
   }
 
@@ -138,6 +153,26 @@ ipcMain.handle("browse-for-exe", async () => {
   return result.filePaths[0];
 });
 
+// --- BROWSE FOR FILE ---
+ipcMain.handle("browse-for-file", async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ["openFile"],
+    filters: [
+      { name: "PDF Files", extensions: ["pdf"] },
+      { name: "All Files", extensions: ["*"] },
+    ],
+  });
+  return result.filePaths[0];
+});
+
+// --- BROWSE FOR FOLDER ---
+ipcMain.handle("browse-for-folder", async () => {
+  const result = await dialog.showOpenDialog({
+    properties: ["openDirectory"],
+  });
+  return result.filePaths[0];
+});
+
 // ---------- APP LAUNCH LOGIC ----------
 
 function runCommand(command) {
@@ -192,56 +227,25 @@ async function promptForAppPath(item) {
 }
 
 async function launchApplication(item) {
-  let target = item.target;
-  let isAbsolutePath = path.isAbsolute(target);
+  const target = item.target;
 
-  // If on Windows and not absolute, check PATH
-  if (process.platform === "win32" && !isAbsolutePath) {
-    const exists = await checkCommandExists(target);
-    if (!exists) {
-      console.error(`Command "${target}" not found in PATH.`);
-      const newPath = await promptForAppPath(item);
-      if (newPath) {
-        item.target = newPath;
-        updatePresetsFile();
-        target = newPath;
-        isAbsolutePath = true;
-      } else {
-        return;
-      }
-    }
-  }
-
-  let command = "";
-  if (process.platform === "win32") {
-    if (isAbsolutePath) {
-      command = `"${target}"`;
-    } else {
-      command = `start "" "${target}"`;
-    }
-  } else if (process.platform === "darwin") {
-    if (isAbsolutePath) {
-      command = `"${target}"`;
-    } else {
-      command = `open -a "${target}"`;
-    }
-  } else {
-    command = target;
+  // Check if the path exists
+  if (!fs.existsSync(target)) {
+    console.error(`Path does not exist: ${target}`);
+    return;
   }
 
   try {
-    await runCommand(command);
+    // Use Electron's built-in shell.openPath for cross-platform compatibility
+    const result = await shell.openPath(target);
+
+    // If there's an error, shell.openPath will return an error message as a string
+    if (result) {
+      console.error(`Failed to open: ${target}\nError: ${result}`);
+    } else {
+      console.log(`Successfully opened: ${target}`);
+    }
   } catch (err) {
     console.error(`Error launching ${target}:`, err);
-    const newPath = await promptForAppPath(item);
-    if (newPath) {
-      item.target = newPath;
-      updatePresetsFile();
-      try {
-        await runCommand(`"${newPath}"`);
-      } catch (err2) {
-        console.error(`Error launching ${newPath}:`, err2);
-      }
-    }
   }
 }

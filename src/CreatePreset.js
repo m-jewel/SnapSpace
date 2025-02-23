@@ -43,12 +43,26 @@ function CreatePreset({ onDone, onCancel, existingPresets }) {
     });
   };
 
-  const handleBrowseExe = (index) => {
-    window.electronAPI.browseForExe().then((filePath) => {
-      if (filePath) {
-        handleItemChange(index, "target", filePath);
-      }
-    });
+  const handleBrowse = (index, type) => {
+    if (type === "app") {
+      window.electronAPI.browseForExe().then((filePath) => {
+        if (filePath) {
+          handleItemChange(index, "target", filePath);
+        }
+      });
+    } else if (type === "file") {
+      window.electronAPI.browseForFile().then((filePath) => {
+        if (filePath) {
+          handleItemChange(index, "target", filePath);
+        }
+      });
+    } else if (type === "folder") {
+      window.electronAPI.browseForFolder().then((folderPath) => {
+        if (folderPath) {
+          handleItemChange(index, "target", folderPath);
+        }
+      });
+    }
   };
 
   // --- VALIDATION ---
@@ -72,21 +86,13 @@ function CreatePreset({ onDone, onCancel, existingPresets }) {
       toast.error("Please add at least one item.");
     }
 
+    // URL Validation only for URL type
     const hasInvalidUrl = items.some(
       (item) => item.type === "url" && !isValidUrl(item.target.trim())
     );
     if (hasInvalidUrl) {
       errors.items = "One or more URLs are invalid.";
       toast.error("One or more URLs are invalid.");
-    }
-
-    // --- NEW: Check for duplicate preset name ---
-    const isDuplicateName = existingPresets.some(
-      (preset) => preset.name.toLowerCase() === name.trim().toLowerCase()
-    );
-    if (isDuplicateName) {
-      errors.name = "Preset name already exists.";
-      toast.error("Preset name already exists.");
     }
 
     setErrors(errors);
@@ -128,20 +134,32 @@ function CreatePreset({ onDone, onCancel, existingPresets }) {
         >
           <option value="url">URL</option>
           <option value="app">App</option>
+          <option value="file">File</option>
+          <option value="folder">Folder</option>
         </select>
 
         <input
           style={styles.inputItem}
           type="text"
-          placeholder={item.type === "url" ? "https://example.com" : "App path"}
+          placeholder={
+            item.type === "url"
+              ? "https://example.com"
+              : item.type === "app"
+              ? "App path"
+              : item.type === "file"
+              ? "Select a file"
+              : "Select a folder"
+          }
           value={item.target}
           onChange={(e) => handleItemChange(index, "target", e.target.value)}
         />
 
-        {item.type === "app" && (
+        {(item.type === "app" ||
+          item.type === "file" ||
+          item.type === "folder") && (
           <button
             style={styles.browseBtn}
-            onClick={() => handleBrowseExe(index)}
+            onClick={() => handleBrowse(index, item.type)}
           >
             Browse
           </button>

@@ -8,6 +8,14 @@
         {
           "type": "url",
           "target": "https://cas.usask.ca"
+        },
+        {
+          "type": "file",
+          "target": "C:\\Users\\Administrator\\Downloads\\Bitdefender Password Manager_recovery_kit.pdf"
+        },
+        {
+          "type": "folder",
+          "target": "C:\\Users\\Administrator\\Downloads\\Gaming"
         }
       ]
     },
@@ -19,6 +27,21 @@
         {
           "type": "url",
           "target": "https://tools.picsart.com/text/emojis/"
+        }
+      ]
+    },
+    {
+      "name": "test items",
+      "description": "",
+      "icon": "",
+      "items": [
+        {
+          "type": "file",
+          "target": "C:\\Users\\Administrator\\Downloads\\Bitdefender Password Manager_recovery_kit.pdf"
+        },
+        {
+          "type": "folder",
+          "target": "C:\\Users\\Administrator\\Documents"
         }
       ]
     }
