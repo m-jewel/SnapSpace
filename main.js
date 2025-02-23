@@ -66,6 +66,7 @@ ipcMain.handle("launch-preset", async (event, presetName) => {
   if (!preset) {
     return { success: false, message: "Preset not found" };
   }
+
   for (const item of preset.items) {
     if (item.type === "url") {
       shell.openExternal(item.target);
@@ -74,6 +75,8 @@ ipcMain.handle("launch-preset", async (event, presetName) => {
       await new Promise((resolve) => setTimeout(resolve, 500));
     }
   }
+
+  event.sender.send("preset-launched", presetName);
   return { success: true };
 });
 
