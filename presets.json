@@ -9,37 +9,20 @@
           "target": "https://canvas.usask.ca/"
         }
       ],
-      "icon": "😟"
+      "icon": "😟",
+      "lastUsedTime": 1740286560065
     },
     {
-      "name": "essay writing",
+      "name": "study",
       "description": "",
       "icon": "",
       "items": [
         {
-          "type": "app",
-          "target": "C:\\Program Files (x86)\\Microsoft Office\\root\\Office16\\WINWORD.EXE"
-        },
-        {
           "type": "url",
-          "target": "https://docs.google.com"
+          "target": "https://chatgpt.com"
         }
-      ]
-    },
-    {
-      "name": "entertainment",
-      "description": "watching with my <3",
-      "icon": "🤗",
-      "items": [
-        {
-          "type": "url",
-          "target": "https://kisskh.co/"
-        },
-        {
-          "type": "app",
-          "target": "C:\\Users\\Administrator\\AppData\\Local\\Discord\\Update.exe"
-        }
-      ]
+      ],
+      "lastUsedTime": 1740286544069
     }
   ]
 }

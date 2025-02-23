@@ -66,6 +66,7 @@ ipcMain.handle('launch-preset', async (event, presetName) => {
   if (!preset) {
     return { success: false, message: "Preset not found" };
   }
+
   for (const item of preset.items) {
     if (item.type === 'url') {
       shell.openExternal(item.target);
@@ -74,8 +75,11 @@ ipcMain.handle('launch-preset', async (event, presetName) => {
       await new Promise(resolve => setTimeout(resolve, 500));
     }
   }
+
+  event.sender.send('preset-launched', presetName);
   return { success: true };
 });
+
 
 ipcMain.handle('create-preset', async (event, newPreset) => {
   if (!newPreset.name || !Array.isArray(newPreset.items)) {
@@ -86,29 +90,19 @@ ipcMain.handle('create-preset', async (event, newPreset) => {
   return { success: true };
 });
 
-ipcMain.handle('update-preset', async (event, updatedPreset) => {
-  if (!updatedPreset.oldName || !updatedPreset.newName) {
-    return { success: false, message: "Invalid update data" };
+ipcMain.handle('updatePresets', async (event, updatedPresets) => {
+  try {
+    presets = updatedPresets;
+    updatePresetsFile();
+    return { success: true };
+  } catch (error) {
+    console.error('Failed to update presets:', error);
+    return { success: false, message: error.message };
   }
-  const idx = presets.findIndex(p => p.name === updatedPreset.oldName);
-  if (idx < 0) {
-    return { success: false, message: "Preset not found" };
-  }
-  // Overwrite with new data
-  presets[idx].name = updatedPreset.newName;
-  presets[idx].description = updatedPreset.description || '';
-  presets[idx].items = updatedPreset.items || [];
-  presets[idx].icon = updatedPreset.icon;
-  updatePresetsFile();
-  return { success: true };
 });
 
 ipcMain.handle('remove-preset', async (event, presetName) => {
-  const idx = presets.findIndex(p => p.name === presetName);
-  if (idx < 0) {
-    return { success: false, message: "Preset not found" };
-  }
-  presets.splice(idx, 1);
+  presets = presets.filter(p => p.name !== presetName);
   updatePresetsFile();
   return { success: true };
 });
