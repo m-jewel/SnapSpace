@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { toast } from "react-toastify";
 import Home from "./Home";
 import Presets from "./Presets";
 import CreatePreset from "./CreatePreset";
@@ -34,7 +35,7 @@ function App() {
     window.electronAPI.updatePreset({ presets: updatedPresets });
     window.electronAPI.launchPreset(name).then((response) => {
       if (!response.success) {
-        alert(`Failed to launch ${name}: ${response.message}`);
+        toast.error(`Failed to launch ${name}: ${response.message}`);
       }
     });
   };
@@ -79,15 +80,19 @@ function App() {
 
   // --- Remove Preset ---
   const handleRemovePreset = (name) => {
-    if (window.confirm(`Remove preset "${name}"?`)) {
-      window.electronAPI.removePreset(name).then((response) => {
+    window.electronAPI
+      .removePreset(name)
+      .then((response) => {
         if (!response.success) {
-          alert(`Failed to remove preset: ${response.message}`);
+          toast.error(`Failed to remove preset: ${response.message}`);
         } else {
           refreshPresets();
+          toast.success(`Preset "${name}" removed successfully!`);
         }
+      })
+      .catch((error) => {
+        toast.error(`Error: ${error.message}`);
       });
-    }
   };
 
   // --- Helper: Refresh Presets ---
@@ -103,15 +108,16 @@ function App() {
           preset={presetToEdit}
           onSave={handleEditDone}
           onCancel={() => setView("presets")}
+          existingPresets={presets}
         />
       );
 
     case "create":
       return (
         <CreatePreset
-          key={view + Math.random()}
           onDone={handleCreateDone}
           onCancel={handleCreateCancel}
+          existingPresets={presets}
         />
       );
 

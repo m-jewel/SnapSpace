@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
+import { toast } from "react-toastify";
 
-function CreatePreset({ onDone, onCancel }) {
+function CreatePreset({ onDone, onCancel, existingPresets }) {
   // --- STATE ---
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -53,22 +54,44 @@ function CreatePreset({ onDone, onCancel }) {
   // --- VALIDATION ---
   const validateForm = useCallback(() => {
     const errors = {};
-    if (!name.trim()) errors.name = "Preset name is required.";
+
+    if (!name.trim()) {
+      errors.name = "Preset name is required.";
+      toast.error("Preset name is required.");
+    }
 
     const hasEmptyItem = items.some((item) => !item.target.trim());
     const hasAtLeastOneNonEmpty = items.some((item) => item.target.trim());
 
-    if (hasEmptyItem) errors.items = "Please fill or remove empty items.";
-    if (!hasAtLeastOneNonEmpty) errors.items = "At least one item is required.";
+    if (hasEmptyItem) {
+      errors.items = "Please fill or remove empty items.";
+      toast.error("Please fill or remove empty items.");
+    }
+    if (!hasAtLeastOneNonEmpty) {
+      errors.items = "At least one item is required.";
+      toast.error("Please add at least one item.");
+    }
 
     const hasInvalidUrl = items.some(
       (item) => item.type === "url" && !isValidUrl(item.target.trim())
     );
-    if (hasInvalidUrl) errors.items = "One or more URLs are invalid.";
+    if (hasInvalidUrl) {
+      errors.items = "One or more URLs are invalid.";
+      toast.error("One or more URLs are invalid.");
+    }
+
+    // --- NEW: Check for duplicate preset name ---
+    const isDuplicateName = existingPresets.some(
+      (preset) => preset.name.toLowerCase() === name.trim().toLowerCase()
+    );
+    if (isDuplicateName) {
+      errors.name = "Preset name already exists.";
+      toast.error("Preset name already exists.");
+    }
 
     setErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [name, items]);
+  }, [name, items, existingPresets]);
 
   // --- FLOW CONTROLS ---
   const handleNext = () => {
@@ -86,9 +109,9 @@ function CreatePreset({ onDone, onCancel }) {
 
     window.electronAPI.createPreset(newPreset).then((res) => {
       if (!res.success) {
-        alert(`Failed to create preset: ${res.message}`);
+        toast.error(`Failed to create preset: ${res.message}`);
       } else {
-        alert("Preset created successfully!");
+        toast.success("Preset created successfully!");
         onDone({ newPresetName: newPreset.name, action });
       }
     });

@@ -21,6 +21,28 @@
           "target": "https://tools.picsart.com/text/emojis/"
         }
       ]
+    },
+    {
+      "name": "weather app",
+      "description": "",
+      "icon": "〰️",
+      "items": [
+        {
+          "type": "url",
+          "target": "https://openweathermap.org/api"
+        }
+      ]
+    },
+    {
+      "name": "emojis",
+      "description": "",
+      "icon": "🐼",
+      "items": [
+        {
+          "type": "url",
+          "target": "https://tools.picsart.com/text/emojis/"
+        }
+      ]
     }
   ]
 }

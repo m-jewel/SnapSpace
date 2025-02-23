@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { toast } from "react-toastify";
 
-function EditPreset({ preset, onSave, onCancel }) {
+function EditPreset({ preset, onSave, onCancel, existingPresets }) {
   // --- STATE ---
   const [oldName] = useState(preset?.name || "");
   const [newName, setNewName] = useState(preset?.name || "");
@@ -16,7 +17,7 @@ function EditPreset({ preset, onSave, onCancel }) {
     });
 
     if (!preset) {
-      alert("No preset to edit.");
+      toast.error("No preset to edit.");
       onCancel();
     }
   }, [preset, onCancel]);
@@ -64,22 +65,47 @@ function EditPreset({ preset, onSave, onCancel }) {
   // --- VALIDATION ---
   const validateForm = useCallback(() => {
     const errors = {};
-    if (!newName.trim()) errors.newName = "Preset name is required.";
+
+    if (!newName.trim()) {
+      errors.newName = "Preset name is required.";
+      toast.error("Preset name is required.");
+    }
 
     const hasEmptyItem = items.some((item) => !item.target.trim());
     const hasAtLeastOneNonEmpty = items.some((item) => item.target.trim());
 
-    if (hasEmptyItem) errors.items = "Please fill or remove empty items.";
-    if (!hasAtLeastOneNonEmpty) errors.items = "At least one item is required.";
+    if (hasEmptyItem) {
+      errors.items = "Please fill or remove empty items.";
+      toast.error("Please fill or remove empty items.");
+    }
+    if (!hasAtLeastOneNonEmpty) {
+      errors.items = "At least one item is required.";
+      toast.error("Please add at least one item.");
+    }
 
     const hasInvalidUrl = items.some(
       (item) => item.type === "url" && !isValidUrl(item.target.trim())
     );
-    if (hasInvalidUrl) errors.items = "One or more URLs are invalid.";
+    if (hasInvalidUrl) {
+      errors.items = "One or more URLs are invalid.";
+      toast.error("One or more URLs are invalid.");
+    }
+
+    // Check for duplicate preset name excluding the current preset ---
+    const isDuplicateName = existingPresets.some(
+      (preset) =>
+        preset.name.toLowerCase() === newName.trim().toLowerCase() &&
+        preset.name.toLowerCase() !== oldName.toLowerCase() // Exclude current preset name
+    );
+
+    if (isDuplicateName) {
+      errors.newName = "Preset name already exists.";
+      toast.error("Preset name already exists.");
+    }
 
     setErrors(errors);
     return Object.keys(errors).length === 0;
-  }, [newName, items]);
+  }, [newName, items, existingPresets, oldName]);
 
   // --- FLOW CONTROLS ---
   const handleSave = () => {
@@ -95,9 +121,9 @@ function EditPreset({ preset, onSave, onCancel }) {
 
     window.electronAPI.updatePreset(updatedPreset).then((res) => {
       if (!res.success) {
-        alert(`Failed to update preset: ${res.message}`);
+        toast.error(`Failed to update preset: ${res.message}`);
       } else {
-        alert("Preset updated successfully!");
+        toast.success("Preset updated successfully!");
         onSave();
       }
     });
