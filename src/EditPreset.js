@@ -104,8 +104,6 @@ function EditPreset({ preset, onSave, onCancel }) {
     });
   };
 
-  if (!preset) return null;
-
   return (
     <div style={styles.container}>
       <h2 style={styles.header}>Edit Preset</h2>
@@ -149,6 +147,39 @@ function EditPreset({ preset, onSave, onCancel }) {
         />
       </div>
 
+      <h3 style={styles.subheader}>Items to Launch</h3>
+      {items.map((item, index) => (
+        <div key={index} style={styles.itemRow}>
+          <select
+            style={styles.select}
+            value={item.type}
+            onChange={(e) => updateItem(index, 'type', e.target.value)}
+          >
+            <option value="url">URL</option>
+            <option value="app">App</option>
+          </select>
+          <input
+            style={styles.inputItem}
+            type="text"
+            placeholder={item.type === 'url' ? 'https://example.com' : 'AppName or path'}
+            value={item.target}
+            onChange={(e) => updateItem(index, 'target', e.target.value)}
+          />
+          {item.type === 'app' && (
+            <button style={styles.browseBtn} onClick={() => handleBrowseExe(index)}>
+              Browse
+            </button>
+          )}
+          <button style={styles.removeBtn} onClick={() => removeItem(index)}>
+            ✕
+          </button>
+        </div>
+      ))}
+
+      <button style={styles.addBtn} onClick={addItem}>
+        + Add Another Item
+      </button>
+
       <div style={styles.buttonRow}>
         <button style={styles.primaryBtn} onClick={handleSave}>
           Save Changes
@@ -190,6 +221,24 @@ const styles = {
     borderRadius: '8px',
     border: '1px solid #ccc',
     boxSizing: 'border-box'
+  },
+  itemRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    marginBottom: '10px'
+  },
+  select: {
+    padding: '6px 10px',
+    width: '80px',
+    borderRadius: '6px',
+    border: '1px solid #ccc'
+  },
+  inputItem: {
+    flex: 1,
+    padding: '8px',
+    borderRadius: '6px',
+    border: '1px solid #ccc'
   },
   buttonRow: {
     display: 'flex',
