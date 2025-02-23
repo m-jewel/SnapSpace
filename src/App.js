@@ -106,6 +106,7 @@ function App() {
   if (view === 'create') {
     return (
       <CreatePreset
+        key={view + Math.random()}
         onDone={handleCreateDone}
         onCancel={handleCreateCancel}
       />

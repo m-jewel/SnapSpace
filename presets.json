@@ -24,6 +24,32 @@
           "target": "https://docs.google.com"
         }
       ]
+    },
+    {
+      "name": "entertainment",
+      "description": "watching with my <3",
+      "icon": "😶‍🌫️",
+      "items": [
+        {
+          "type": "url",
+          "target": "https://kisskh.co/"
+        },
+        {
+          "type": "app",
+          "target": "C:\\Users\\Administrator\\AppData\\Local\\Discord\\Update.exe"
+        }
+      ]
+    },
+    {
+      "name": "fFFW",
+      "description": "",
+      "icon": "",
+      "items": [
+        {
+          "type": "url",
+          "target": "https://tools.picsart.com/text/emojis/"
+        }
+      ]
     }
   ]
 }

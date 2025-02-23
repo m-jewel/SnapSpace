@@ -153,7 +153,6 @@ function CreatePreset({ onDone, onCancel }) {
             onChange={(e) => setIcon(e.target.value)}
           />
           <p style={styles.hint}>
-            Enter an emoji or an image URL (will display in presets list).
           </p>
         </div>
 
@@ -162,6 +161,8 @@ function CreatePreset({ onDone, onCancel }) {
           <div key={index} style={styles.itemRow}>
             <select
               style={styles.select}
+              onMouseEnter={(e) => e.target.style.border = styles.selectHover.border}
+              onMouseLeave={(e) => e.target.style.border = styles.select.border}
               value={item.type}
               onChange={(e) => updateItem(index, 'type', e.target.value)}
             >
@@ -177,7 +178,15 @@ function CreatePreset({ onDone, onCancel }) {
             />
             {/* Only show "Browse" if it's an app */}
             {item.type === 'app' && (
-              <button style={styles.browseBtn} onClick={() => handleBrowseExe(index)}>
+              <button style={styles.browseBtn} onMouseEnter={(e) => {
+                e.taget.style.background = styles.browseBtnHover.background;
+                e.target.style.transform = styles.browseBtnHover.transform;
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = styles.browseBtn.background;
+                  e.target.style.transform = 'scale(1)';
+                  }}
+                  onClick={() => handleBrowseExe(index)}>
                 Browse
               </button>
             )}
@@ -256,150 +265,177 @@ function CreatePreset({ onDone, onCancel }) {
 }
 
 // --- STYLES ---
-
 const styles = {
   container: {
     display: 'flex',
     flexDirection: 'column',
-    alignSelf: 'center',
-    justifyContent: 'flex-start',
-    width: '70%',
-    maxWidth: '600px',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: '20px',
+    background: '#fff',
+    borderRadius: '20px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+    maxWidth: '400px', 
+    width: '90%',     
     margin: '0 auto',
-    marginTop: '30px'
   },
   header: {
-    fontSize: '1.5rem',
-    marginBottom: '10px',
-    lineHeight: '1.2'
+    fontSize: '1.8rem',
+    marginBottom: '20px',
+    color: '#333',
+    textAlign: 'center',
   },
   fieldGroup: {
+    width: '100%',
+    marginBottom: '15px',
     display: 'flex',
     flexDirection: 'column',
-    marginBottom: '10px'
   },
   label: {
+    marginBottom: '5px',
+    fontWeight: 'bold',
     fontSize: '0.9rem',
-    marginBottom: '4px',
-    fontWeight: 'bold'
-  },
-  required: {
-    color: '#f00',
-    fontSize: '0.8rem'
-  },
-  optional: {
-    color: '#999',
-    fontSize: '0.8rem'
   },
   input: {
-    padding: '8px',
+    width: '100%',
+    padding: '10px',
+    borderRadius: '8px',
+    border: '1px solid #ccc',
+    boxSizing: 'border-box',
+    transition: 'border 0.2s',
+  },
+  inputFocus: {
+    border: '1px solid #007bff',
+    outline: 'none',
+  },
+  select: {
+    padding: '6px 10px',
+    fontSize: '0.85rem',
+    color: '#333',
+    background: '#f4f4f9',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'border 0.2s',
+    appearance: 'none',
+    cursor: 'pointer',
+    width: '30%',
+    boxSizing: 'border-box'
+  },
+  inputItem: {
+    flex: 1,
+    padding: '10px',
     fontSize: '0.9rem',
-    borderRadius: '4px',
-    border: '1px solid #ccc'
-  },
-  hint: {
-    margin: '4px 0',
-    fontSize: '0.8rem',
-    color: '#666'
-  },
-  subheader: {
-    fontSize: '1.1rem',
-    margin: '15px 0 8px 0'
+    borderRadius: '8px',
+    border: '1px solid #ccc',
+    boxSizing: 'border-box'
   },
   itemRow: {
     display: 'flex',
     alignItems: 'center',
-    marginBottom: '8px'
-  },
-  select: {
-    padding: '6px',
-    fontSize: '0.9rem',
-    marginRight: '6px',
-    borderRadius: '4px',
-    border: '1px solid #ccc'
-  },
-  inputItem: {
-    flex: 1,
-    padding: '8px',
-    fontSize: '0.9rem',
-    borderRadius: '4px',
-    border: '1px solid #ccc'
+    gap: '10px',
+    marginBottom: '10px'
   },
   browseBtn: {
-    marginLeft: '6px',
-    backgroundColor: '#34495e',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '6px 10px',
-    cursor: 'pointer'
+    padding: '6px 12px',
+    fontSize: '0.85rem',
+    background: '#e0e0e0',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    cursor: 'pointer',
+    transition: 'transform 0.2s, background 0.2s',
+    marginLeft: '6px'
+  },
+  browseBtnHover: {
+    background: '#d5d5d5',
+    transform: 'scale(1.02)',
   },
   removeBtn: {
-    marginLeft: '6px',
-    backgroundColor: '#e74c3c',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '6px 10px',
-    cursor: 'pointer'
+    padding: '6px 8px',
+    fontSize: '0.85rem',
+    background: '#f4f4f9',
+    color: '#333',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    marginLeft: '8px'
   },
   addBtn: {
-    backgroundColor: '#3498db',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '8px 12px',
-    fontSize: '0.9rem',
+    padding: '6px 12px',
+    margin: '10px 0',
     cursor: 'pointer',
-    alignSelf: 'flex-start'
+    fontSize: '0.85rem',
+    background: '#e0e0e0',
+    color: '#333',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'transform 0.2s, background 0.2s',
   },
   buttonRow: {
     display: 'flex',
-    marginTop: '20px',
-    gap: '10px'
+    justifyContent: 'center',
+    gap: '10px',
+    flexWrap: 'wrap',
+    marginTop: '15px'
   },
   primaryBtn: {
-    backgroundColor: '#2ecc71',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '10px 16px',
+    padding: '6px 12px',
+    cursor: 'pointer',
     fontSize: '0.9rem',
-    cursor: 'pointer'
+    background: '#4a4a4a',
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
+    transition: 'transform 0.2s, background 0.2s',
   },
   secondaryBtn: {
-    backgroundColor: '#bdc3c7',
-    color: '#2c3e50',
-    border: 'none',
-    borderRadius: '4px',
-    padding: '10px 16px',
+    padding: '6px 12px',
+    cursor: 'pointer',
     fontSize: '0.9rem',
-    cursor: 'pointer'
+    background: '#f4f4f9',
+    color: '#333',
+    border: '1px solid #ccc',
+    borderRadius: '8px',
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+    transition: 'transform 0.2s, background 0.2s',
   },
   summaryBox: {
     backgroundColor: '#fff',
     border: '1px solid #ccc',
-    borderRadius: '6px',
+    borderRadius: '12px',
     padding: '15px',
-    marginBottom: '10px'
-  },
-  summaryText: {
-    margin: '6px 0'
-  },
-  itemList: {
+    marginBottom: '10px',
+    width: '100%',
+    maxWidth: '350px',
+    overflowY: 'auto',
+    maxHeight: '300px',
+    boxSizing: 'border-box'
+},
+summaryText: {
+    margin: '6px 0',
+    wordWrap: 'break-word',
+    overflowWrap: 'break-word'
+},
+itemList: {
     listStyleType: 'none',
-    padding: 0,
+    padding: '0',
     marginLeft: '0'
-  },
-  listItem: {
+},
+listItem: {
     backgroundColor: '#ecf0f1',
     marginBottom: '5px',
     padding: '5px 8px',
-    borderRadius: '4px'
-  },
-  question: {
-    margin: '10px 0'
-  }
+    borderRadius: '4px',
+    wordWrap: 'break-word',
+    overflowWrap: 'break-word'
+},
+question: {
+    margin: '10px 0',
+    textAlign: 'center'
+}
+
 };
 
 export default CreatePreset;
