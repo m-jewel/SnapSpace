@@ -1,96 +1,86 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 
 function CreatePreset({ onDone, onCancel }) {
-  // Step 1: gather input
+  // --- STATE ---
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [icon, setIcon] = useState(""); // <-- NEW: icon field
+  const [icon, setIcon] = useState("");
   const [items, setItems] = useState([{ type: "url", target: "" }]);
   const [step, setStep] = useState(1); // 1 = form, 2 = summary
+  const [errors, setErrors] = useState({});
 
-  // --- Helper: Validate a URL
-  function isValidUrl(value) {
+  // --- HELPERS ---
+  // URL Validation
+  const isValidUrl = (value) => {
     try {
       new URL(value);
       return true;
     } catch (err) {
       return false;
     }
-  }
-
-  // Add an item row
-  const addItem = () => {
-    setItems([...items, { type: "url", target: "" }]);
   };
 
-  // Update an item
-  const updateItem = (index, field, value) => {
-    const updated = [...items];
-    updated[index][field] = value;
-    setItems(updated);
+  // Input Change Handlers
+  const handleInputChange = (setter) => (e) => setter(e.target.value);
+
+  const handleItemChange = (index, field, value) => {
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index][field] = value;
+      return updatedItems;
+    });
   };
 
-  // Remove an item
+  const addItem = () =>
+    setItems((prev) => [...prev, { type: "url", target: "" }]);
+
   const removeItem = (index) => {
-    const updated = [...items];
-    updated.splice(index, 1);
-    setItems(updated);
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems.splice(index, 1);
+      return updatedItems;
+    });
   };
 
-  // For "Browse" button when item.type === 'app'
   const handleBrowseExe = (index) => {
     window.electronAPI.browseForExe().then((filePath) => {
       if (filePath) {
-        updateItem(index, "target", filePath);
+        handleItemChange(index, "target", filePath);
       }
     });
   };
 
-  // Step 1: Validate before moving to summary
-  const handleNext = () => {
-    // Check required name
-    if (!name.trim()) {
-      alert("Please provide a preset name.");
-      return;
-    }
+  // --- VALIDATION ---
+  const validateForm = useCallback(() => {
+    const errors = {};
+    if (!name.trim()) errors.name = "Preset name is required.";
 
-    // Check if any item is partially filled
     const hasEmptyItem = items.some((item) => !item.target.trim());
-    // Also check if user ended up with no valid items
     const hasAtLeastOneNonEmpty = items.some((item) => item.target.trim());
 
-    if (hasEmptyItem) {
-      alert("One or more items are empty. Please fill them or remove them.");
-      return;
-    }
-    if (!hasAtLeastOneNonEmpty) {
-      alert("Please add at least one valid item (URL or App).");
-      return;
-    }
+    if (hasEmptyItem) errors.items = "Please fill or remove empty items.";
+    if (!hasAtLeastOneNonEmpty) errors.items = "At least one item is required.";
 
-    // Check for invalid URLs
-    const hasInvalidUrl = items.some((item) => {
-      if (item.type === "url") {
-        return !isValidUrl(item.target.trim());
-      }
-      return false;
-    });
-    if (hasInvalidUrl) {
-      alert("One or more URLs are invalid. Please check them.");
-      return;
-    }
+    const hasInvalidUrl = items.some(
+      (item) => item.type === "url" && !isValidUrl(item.target.trim())
+    );
+    if (hasInvalidUrl) errors.items = "One or more URLs are invalid.";
 
-    setStep(2);
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [name, items]);
+
+  // --- FLOW CONTROLS ---
+  const handleNext = () => {
+    if (validateForm()) setStep(2);
   };
 
-  // Step 2: show summary (only non-empty items)
   const handleConfirm = (action) => {
     const filteredItems = items.filter((item) => item.target.trim());
-
     const newPreset = {
       name: name.trim(),
       description: description.trim(),
-      icon: icon.trim(), // <-- NEW: store the icon
+      icon: icon.trim(),
       items: filteredItems,
     };
 
@@ -104,9 +94,43 @@ function CreatePreset({ onDone, onCancel }) {
     });
   };
 
-  // --- RENDER ---
+  // --- RENDER ITEMS ---
+  const renderItems = () =>
+    items.map((item, index) => (
+      <div key={index} style={styles.itemRow}>
+        <select
+          style={styles.select}
+          value={item.type}
+          onChange={(e) => handleItemChange(index, "type", e.target.value)}
+        >
+          <option value="url">URL</option>
+          <option value="app">App</option>
+        </select>
 
-  // STEP 1: FORM
+        <input
+          style={styles.inputItem}
+          type="text"
+          placeholder={item.type === "url" ? "https://example.com" : "App path"}
+          value={item.target}
+          onChange={(e) => handleItemChange(index, "target", e.target.value)}
+        />
+
+        {item.type === "app" && (
+          <button
+            style={styles.browseBtn}
+            onClick={() => handleBrowseExe(index)}
+          >
+            Browse
+          </button>
+        )}
+
+        <button style={styles.removeBtn} onClick={() => removeItem(index)}>
+          ✕
+        </button>
+      </div>
+    ));
+
+  // --- RENDER ---
   if (step === 1) {
     return (
       <div style={styles.container}>
@@ -122,91 +146,43 @@ function CreatePreset({ onDone, onCancel }) {
             type="text"
             placeholder="e.g., Study Mode"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={handleInputChange(setName)}
           />
+          {errors.name && <p style={styles.errorText}>{errors.name}</p>}
         </div>
 
         {/* Description */}
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>
-            Description <span style={styles.optional}>(optional)</span>
-          </label>
+          <label style={styles.label}>Description (optional)</label>
           <input
             style={styles.input}
             type="text"
             placeholder="e.g., Opens Canvas, Notion..."
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={handleInputChange(setDescription)}
           />
         </div>
 
         {/* Icon Field */}
         <div style={styles.fieldGroup}>
-          <label style={styles.label}>
-            Icon <span style={styles.optional}>(optional)</span>
-          </label>
+          <label style={styles.label}>Icon (optional)</label>
           <input
             style={styles.input}
             type="text"
             placeholder="e.g., 📚 or https://example.com/icon.png"
             value={icon}
-            onChange={(e) => setIcon(e.target.value)}
+            onChange={handleInputChange(setIcon)}
           />
-          <p style={styles.hint}></p>
         </div>
 
         <h3 style={styles.subheader}>Items to Launch</h3>
-        {items.map((item, index) => (
-          <div key={index} style={styles.itemRow}>
-            <select
-              style={styles.select}
-              onMouseEnter={(e) =>
-                (e.target.style.border = styles.selectHover.border)
-              }
-              onMouseLeave={(e) =>
-                (e.target.style.border = styles.select.border)
-              }
-              value={item.type}
-              onChange={(e) => updateItem(index, "type", e.target.value)}
-            >
-              <option value="url">URL</option>
-              <option value="app">App</option>
-            </select>
-            <input
-              style={styles.inputItem}
-              type="text"
-              placeholder={
-                item.type === "url" ? "https://example.com" : "AppName or path"
-              }
-              value={item.target}
-              onChange={(e) => updateItem(index, "target", e.target.value)}
-            />
-            {/* Only show "Browse" if it's an app */}
-            {item.type === "app" && (
-              <button
-                style={styles.browseBtn}
-                onMouseEnter={(e) => {
-                  e.taget.style.background = styles.browseBtnHover.background;
-                  e.target.style.transform = styles.browseBtnHover.transform;
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.background = styles.browseBtn.background;
-                  e.target.style.transform = "scale(1)";
-                }}
-                onClick={() => handleBrowseExe(index)}
-              >
-                Browse
-              </button>
-            )}
-            <button style={styles.removeBtn} onClick={() => removeItem(index)}>
-              ✕
-            </button>
-          </div>
-        ))}
+        {renderItems()}
 
         <button style={styles.addBtn} onClick={addItem}>
           + Add Another Item
         </button>
+
+        {errors.items && <p style={styles.errorText}>{errors.items}</p>}
 
         <div style={styles.buttonRow}>
           <button style={styles.primaryBtn} onClick={handleNext}>
@@ -220,44 +196,34 @@ function CreatePreset({ onDone, onCancel }) {
     );
   }
 
-  // STEP 2: SUMMARY
-  const displayItems = items.filter((item) => item.target.trim());
-
+  // --- STEP 2: SUMMARY ---
   return (
     <div style={styles.container}>
       <h2 style={styles.header}>Review Your Preset</h2>
       <div style={styles.summaryBox}>
-        <p style={styles.summaryText}>
+        <p>
           <strong>Name:</strong> {name}
         </p>
-        {description.trim() && (
-          <p style={styles.summaryText}>
+        {description && (
+          <p>
             <strong>Description:</strong> {description}
           </p>
         )}
-        {icon.trim() && (
-          <p style={styles.summaryText}>
+        {icon && (
+          <p>
             <strong>Icon:</strong> {icon}
           </p>
         )}
 
-        {displayItems.length > 0 && (
-          <>
-            <h3 style={styles.subheader}>Items:</h3>
-            <ul style={styles.itemList}>
-              {displayItems.map((item, i) => (
-                <li key={i} style={styles.listItem}>
-                  <strong>{item.type.toUpperCase()}</strong> - {item.target}
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
+        <h3 style={styles.subheader}>Items:</h3>
+        <ul style={styles.itemList}>
+          {items.map((item, i) => (
+            <li key={i}>
+              <strong>{item.type.toUpperCase()}</strong> - {item.target}
+            </li>
+          ))}
+        </ul>
       </div>
-
-      <p style={styles.question}>
-        Would you like to confirm and save this preset?
-      </p>
 
       <div style={styles.buttonRow}>
         <button
@@ -270,7 +236,7 @@ function CreatePreset({ onDone, onCancel }) {
           style={styles.primaryBtn}
           onClick={() => handleConfirm("launch")}
         >
-          Confirm &amp; Launch
+          Confirm & Launch
         </button>
         <button style={styles.secondaryBtn} onClick={() => setStep(1)}>
           Back

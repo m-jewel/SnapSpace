@@ -1,93 +1,90 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 
 function EditPreset({ preset, onSave, onCancel }) {
+  // --- STATE ---
   const [oldName] = useState(preset?.name || "");
   const [newName, setNewName] = useState(preset?.name || "");
   const [description, setDescription] = useState(preset?.description || "");
   const [icon, setIcon] = useState(preset?.icon || "");
   const [items, setItems] = useState(preset?.items || []);
+  const [errors, setErrors] = useState({});
 
+  // --- EFFECTS ---
   useEffect(() => {
     window.electronAPI.receive("update-preset", (data) => {
       console.log("Presets updated:", data);
     });
+
     if (!preset) {
       alert("No preset to edit.");
       onCancel();
     }
   }, [preset, onCancel]);
 
-  // Helper: Validate URL
-  function isValidUrl(value) {
+  // --- HELPERS ---
+  // URL Validation
+  const isValidUrl = (value) => {
     try {
       new URL(value);
       return true;
     } catch (err) {
       return false;
     }
-  }
+  };
 
-  // For "Browse" button when item.type === 'app'
+  const handleInputChange = (setter) => (e) => setter(e.target.value);
+
+  const handleItemChange = (index, field, value) => {
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems[index][field] = value;
+      return updatedItems;
+    });
+  };
+
+  const addItem = () =>
+    setItems((prev) => [...prev, { type: "url", target: "" }]);
+
+  const removeItem = (index) => {
+    setItems((prevItems) => {
+      const updatedItems = [...prevItems];
+      updatedItems.splice(index, 1);
+      return updatedItems;
+    });
+  };
+
   const handleBrowseExe = (index) => {
     window.electronAPI.browseForExe().then((filePath) => {
       if (filePath) {
-        updateItem(index, "target", filePath);
+        handleItemChange(index, "target", filePath);
       }
     });
   };
 
-  // Add a new item row
-  const addItem = () => {
-    setItems([...items, { type: "url", target: "" }]);
-  };
+  // --- VALIDATION ---
+  const validateForm = useCallback(() => {
+    const errors = {};
+    if (!newName.trim()) errors.newName = "Preset name is required.";
 
-  // Update an item (type or target)
-  const updateItem = (index, field, value) => {
-    const updated = [...items];
-    updated[index][field] = value;
-    setItems(updated);
-  };
-
-  // Remove an item
-  const removeItem = (index) => {
-    const updated = [...items];
-    updated.splice(index, 1);
-    setItems(updated);
-  };
-
-  // Validate and save changes
-  const handleSave = () => {
-    if (!newName.trim()) {
-      alert("Preset name is required.");
-      return;
-    }
-
-    // Check for empty items
     const hasEmptyItem = items.some((item) => !item.target.trim());
-    if (hasEmptyItem) {
-      alert("One or more items are empty. Please fill them or remove them.");
-      return;
-    }
+    const hasAtLeastOneNonEmpty = items.some((item) => item.target.trim());
 
-    // Check if there's at least one item
-    if (items.length === 0) {
-      alert("Please add at least one valid item.");
-      return;
-    }
+    if (hasEmptyItem) errors.items = "Please fill or remove empty items.";
+    if (!hasAtLeastOneNonEmpty) errors.items = "At least one item is required.";
 
-    // Validate URLs
-    const hasInvalidUrl = items.some((item) => {
-      if (item.type === "url") {
-        return !isValidUrl(item.target.trim());
-      }
-      return false;
-    });
-    if (hasInvalidUrl) {
-      alert("One or more URLs are invalid. Please check them.");
-      return;
-    }
+    const hasInvalidUrl = items.some(
+      (item) => item.type === "url" && !isValidUrl(item.target.trim())
+    );
+    if (hasInvalidUrl) errors.items = "One or more URLs are invalid.";
 
-    // Build updated preset
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
+  }, [newName, items]);
+
+  // --- FLOW CONTROLS ---
+  const handleSave = () => {
+    if (!validateForm()) return;
+
     const updatedPreset = {
       oldName,
       newName: newName.trim(),
@@ -96,7 +93,6 @@ function EditPreset({ preset, onSave, onCancel }) {
       items,
     };
 
-    // Send the updated preset to main process
     window.electronAPI.updatePreset(updatedPreset).then((res) => {
       if (!res.success) {
         alert(`Failed to update preset: ${res.message}`);
@@ -107,6 +103,43 @@ function EditPreset({ preset, onSave, onCancel }) {
     });
   };
 
+  // --- RENDER ITEMS ---
+  const renderItems = () =>
+    items.map((item, index) => (
+      <div key={index} style={styles.itemRow}>
+        <select
+          style={styles.select}
+          value={item.type}
+          onChange={(e) => handleItemChange(index, "type", e.target.value)}
+        >
+          <option value="url">URL</option>
+          <option value="app">App</option>
+        </select>
+
+        <input
+          style={styles.inputItem}
+          type="text"
+          placeholder={item.type === "url" ? "https://example.com" : "App path"}
+          value={item.target}
+          onChange={(e) => handleItemChange(index, "target", e.target.value)}
+        />
+
+        {item.type === "app" && (
+          <button
+            style={styles.browseBtn}
+            onClick={() => handleBrowseExe(index)}
+          >
+            Browse
+          </button>
+        )}
+
+        <button style={styles.removeBtn} onClick={() => removeItem(index)}>
+          ✕
+        </button>
+      </div>
+    ));
+
+  // --- RENDER ---
   return (
     <div style={styles.container}>
       <h2 style={styles.header}>Edit Preset</h2>
@@ -120,73 +153,41 @@ function EditPreset({ preset, onSave, onCancel }) {
           type="text"
           placeholder="e.g., Study Mode"
           value={newName}
-          onChange={(e) => setNewName(e.target.value)}
+          onChange={handleInputChange(setNewName)}
         />
+        {errors.newName && <p style={styles.errorText}>{errors.newName}</p>}
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>
-          Description <span style={styles.optional}>(optional)</span>
-        </label>
+        <label style={styles.label}>Description (optional)</label>
         <input
           style={styles.input}
           type="text"
           placeholder="e.g., Opens Canvas, Notion..."
           value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          onChange={handleInputChange(setDescription)}
         />
       </div>
 
       <div style={styles.fieldGroup}>
-        <label style={styles.label}>
-          Icon <span style={styles.optional}>(optional)</span>
-        </label>
+        <label style={styles.label}>Icon (optional)</label>
         <input
           style={styles.input}
           type="text"
           placeholder="e.g., 📚 or https://example.com/icon.png"
           value={icon}
-          onChange={(e) => setIcon(e.target.value)}
+          onChange={handleInputChange(setIcon)}
         />
       </div>
 
       <h3 style={styles.subheader}>Items to Launch</h3>
-      {items.map((item, index) => (
-        <div key={index} style={styles.itemRow}>
-          <select
-            style={styles.select}
-            value={item.type}
-            onChange={(e) => updateItem(index, "type", e.target.value)}
-          >
-            <option value="url">URL</option>
-            <option value="app">App</option>
-          </select>
-          <input
-            style={styles.inputItem}
-            type="text"
-            placeholder={
-              item.type === "url" ? "https://example.com" : "AppName or path"
-            }
-            value={item.target}
-            onChange={(e) => updateItem(index, "target", e.target.value)}
-          />
-          {item.type === "app" && (
-            <button
-              style={styles.browseBtn}
-              onClick={() => handleBrowseExe(index)}
-            >
-              Browse
-            </button>
-          )}
-          <button style={styles.removeBtn} onClick={() => removeItem(index)}>
-            ✕
-          </button>
-        </div>
-      ))}
+      {renderItems()}
 
       <button style={styles.addBtn} onClick={addItem}>
         + Add Another Item
       </button>
+
+      {errors.items && <p style={styles.errorText}>{errors.items}</p>}
 
       <div style={styles.buttonRow}>
         <button style={styles.primaryBtn} onClick={handleSave}>
