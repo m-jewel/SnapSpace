@@ -2,8 +2,20 @@ const { app, BrowserWindow, ipcMain, shell, dialog } = require("electron");
 const path = require("path");
 const fs = require("fs");
 const { spawn, exec } = require("child_process");
+const AutoLaunch = require("auto-launch");
 
 let mainWindow;
+
+const snapspaceAutoLaunch = new AutoLaunch({
+  name: "SnapSpace",
+  path: process.execPath, // Path to the executable
+});
+
+snapspaceAutoLaunch.isEnabled().then((isEnabled) => {
+  if (!isEnabled) {
+    snapspaceAutoLaunch.enable();
+  }
+});
 
 const userDataPath = app.getPath("userData");
 const presetsPath = path.join(userDataPath, "presets.json");
