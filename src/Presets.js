@@ -31,7 +31,7 @@ function PresetCard({ preset, onLaunch, onEdit, onRemove, style }) {
       onMouseLeave={() => setHover(false)}
     >
       <div style={styles.icon}>{renderIcon(preset.icon)}</div>
-      <div style={styles.name}>{preset.name}</div>
+      <div style={styles.name} title={preset.name}>{preset.name}</div>
       {preset.description && (
         <div style={styles.desc}>{preset.description}</div>
       )}
@@ -299,7 +299,12 @@ const styles = {
 name: {
   fontWeight: 'bold',
   marginBottom: '0.3em',
-  fontSize: '1.0em'
+  fontSize: '1.0em',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  maxWidth: '100%',
+  display: 'block'
 },
 desc: {
   fontSize: '0.8em',
