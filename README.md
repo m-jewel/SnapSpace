@@ -14,7 +14,7 @@ A go-to app for setting up my workspace in one click. Every morning, I used to w
   - Option to schedule presets for specific times (e.g., Study Mode on weekdays, Gaming Mode on weekends).
 
 <ins>c. Cross-Platform Compatibility</ins>
-  - Support for Windows, macOS, and potentially Linux.
+  - [to do] Support for Windows, macOS, and potentially Linux.
 
 <ins>d. User Interface</ins>
   - Preset icons for easy identification (e.g., book for Study Mode, controller for Gaming Mode).
@@ -22,6 +22,6 @@ A go-to app for setting up my workspace in one click. Every morning, I used to w
   - Quick access to settings and customization.
 
 <ins>e. Smart Features</ins>
-  - Auto Mode Switch: Automatically switches modes based on the time or connected devices (e.g., switches to Gaming Mode when a controller is connected).
-  - Focus Mode: Temporarily blocks gaming distractions during Study Mode.
-  - Launch on Startup: Option to automatically start the app with the system.
+  - [to do] Auto Mode Switch: Automatically switches modes based on the time or connected devices (e.g., switches to Gaming Mode when a controller is connected).
+  - [to do] Focus Mode: Temporarily blocks gaming distractions during Study Mode.
+  - [to do] Launch on Startup: Option to automatically start the app with the system.
